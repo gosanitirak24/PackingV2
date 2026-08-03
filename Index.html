@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Packing App v2.2 - ระบบรับเข้าสต็อก</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    :root {
+      --color-primary: #B8EA85;
+      --color-secondary: #3E870D;
+      --color-bg: #E0E3E5;
+      --color-dark: #1a1a1a;
+      --color-light: #f5f5f5;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--color-bg) 0%, #d0d3d8 100%);
+      min-height: 100vh;
+      color: var(--color-dark);
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .glass-solid {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: linear-gradient(135deg, rgba(184, 234, 133, 0.8), rgba(62, 135, 13, 0.8));
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .navbar h1 {
+      color: white;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin: 0 5px;
+      font-weight: 500;
+    }
+    
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: var(--color-secondary);
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(184, 234, 133, 0.4);
+    }
+    
+    .tab-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    input, select, textarea {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--color-dark);
+      transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.35);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 15px rgba(184, 234, 133, 0.3);
+    }
+    
+    input::placeholder {
+      color: rgba(0, 0, 0, 0.4);
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), #a8d85a);
+      color: var(--color-secondary);
+      box-shadow: 0 4px 15px rgba(184, 234, 133, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(184, 234, 133, 0.6);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: rgba(62, 135, 13, 0.7);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+    }
+    
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.75rem;
+    }
+    
+    .btn-danger {
+      background: rgba(220, 38, 38, 0.7);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    #cameraPreview {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #000;
+    }
+    
+    #zoomSlider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.3);
+      outline: none;
+      border-radius: 3px;
+    }
+    
+    #zoomSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--color-primary);
+      cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    #zoomSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--color-primary);
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    th {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--color-dark);
+    }
+    
+    tr:hover {
+      background: rgba(184, 234, 133, 0.1);
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      animation: slideDown 0.3s ease-out;
+    }
+    
+    .alert-success {
+      background: rgba(34, 197, 94, 0.2);
+      border-left: 4px solid #22c55e;
+      color: #166534;
+    }
+    
+    .alert-error {
+      background: rgba(239, 68, 68, 0.2);
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+    }
+    
+    .alert-warning {
+      background: rgba(251, 191, 36, 0.2);
+      border-left: 4px solid #fbbf24;
+      color: #92400e;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid var(--color-primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      .navbar, .tabs, .tab-controls, .btn {
+        display: none !important;
+      }
+      .print-section {
+        page-break-inside: avoid;
+      }
+    }
+    
+    .label-template {
+      width: 10cm;
+      height: 15cm;
+      border: 2px solid #000;
+      padding: 10px;
+      margin: 10px;
+      background: white;
+      color: black;
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      page-break-inside: avoid;
+    }
+    
+    .label-template .label-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    
+    .label-template .qr-code {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 9px;
+      color: #666;
+    }
+    
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 12px 15px;
+      }
+      
+      .navbar h1 {
+        font-size: 1.3rem;
+      }
+      
+      .tab-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        margin: 0 3px;
+      }
+      
+      .glass-solid {
+        margin: 10px;
+      }
+      
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      
+      table {
+        font-size: 0.85rem;
+      }
+      
+      th, td {
+        padding: 8px;
+      }
+      
+      input, select {
+        font-size: 16px;
+      }
+    }
+    
+    .unit-item {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    .unit-item:hover {
+      background: rgba(184, 234, 133, 0.2);
+      border-color: var(--color-primary);
+    }
+    
+    .unit-item.warning {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #fbbf24;
+    }
+    
+    .unit-item.danger {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+    }
+    
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl">📦 Packing App v2.2</h1>
+      <div class="text-white text-sm">ระบบรับเข้าสต็อก</div>
+    </div>
+  </div>
+  
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div id="alertContainer"></div>
+    
+    <div class="glass-solid mb-6 p-4 sticky top-20 z-40">
+      <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+        <button class="tab-btn active" onclick="switchTab('scan')">🔍 สแกน</button>
+        <button class="tab-btn" onclick="switchTab('stockin')">📥 รับเข้า</button>
+        <button class="tab-btn" onclick="switchTab('report')">📊 รายงาน</button>
+        <button class="tab-btn" onclick="switchTab('history')">📜 ประวัติ</button>
+        <button class="tab-btn" onclick="switchTab('print')">🖨️ พิมพ์</button>
+      </div>
+    </div>
+    
+    <!-- SCAN TAB -->
+    <div id="scan" class="tab-content active">
+      <div class="glass-solid p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">🔍 สแกน Barcode / QR Code</h2>
+        
+        <div class="mb-6">
+          <label class="block mb-2 font-semibold">เลือก Inventory ID:</label>
+          <select id="inventorySelect" onchange="onInventoryChange()" class="w-full mb-4">
+            <option value="">-- เลือก Inventory ID --</option>
+          </select>
+        </div>
+        
+        <div class="bg-black rounded-12 mb-6 overflow-hidden">
+          <video id="cameraPreview" autoplay playsinline></video>
+        </div>
+        
+        <div class="mb-6">
+          <label class="block mb-2 font-semibold">🔎 ซูม:</label>
+          <input type="range" id="zoomSlider" min="1" max="4" step="0.1" value="1" onchange="setZoom(this.value)">
+          <div class="text-center mt-2 text-sm">Zoom: <span id="zoomValue">1.0x</span></div>
+        </div>
+        
+        <div class="mb-6">
+          <label class="block mb-2 font-semibold">หรือกรอก Barcode ด้วยตนเอง:</label>
+          <input type="text" id="manualBarcodeInput" placeholder="สแกน Barcode ที่นี่..." class="w-full mb-2" onkeypress="handleBarcodeKeyPress(event)">
+          <button class="btn btn-primary w-full" onclick="scanManualBarcode()">ยืนยันการสแกน</button>
+        </div>
+        
+        <div id="unitsDisplay" class="mb-6"></div>
+        
+        <div class="text-sm text-gray-600 text-center mt-4">
+          💡 เปิดกล้องและชี้ไปที่ Barcode/QR Code เพื่อสแกน
+        </div>
+      </div>
+    </div>
+    
+    <!-- STOCK IN TAB -->
+    <div id="stockin" class="tab-content">
+      <div class="glass-solid p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">📥 บันทึกการรับเข้าสต็อก</h2>
+        
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label class="block mb-2 font-semibold">Inventory ID:</label>
+            <input type="text" id="stockinInventoryId" readonly class="w-full bg-gray-200">
+          </div>
+          <div>
+            <label class="block mb-2 font-semibold">Shipment ID:</label>
+            <input type="text" id="stockinShipmentId" readonly class="w-full bg-gray-200">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block mb-2 font-semibold">Delivery:</label>
+            <input type="text" id="stockinDelivery" readonly class="w-full bg-gray-200">
+          </div>
+        </div>
+        
+        <div class="table-container mb-6">
+          <table id="stockinTable">
+            <thead>
+              <tr>
+                <th>ลำดับ</th>
+                <th>MATUnit</th>
+                <th>จำนวนตามค่าสั่ง</th>
+                <th>สแกนแล้ว</th>
+                <th>คงเหลือ</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="stockinTableBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <button class="btn btn-primary" onclick="submitStockIn()">✓ บันทึกการรับเข้า</button>
+          <button class="btn btn-secondary" onclick="resetStockIn()">🔄 รีเซ็ต</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- REPORT TAB -->
+    <div id="report" class="tab-content">
+      <div class="glass-solid p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">📊 รายงานสต็อกคงเหลือ</h2>
+        
+        <button class="btn btn-primary mb-6" onclick="loadStockSummary()">🔄 โหลดข้อมูล</button>
+        
+        <div class="table-container">
+          <table id="reportTable">
+            <thead>
+              <tr>
+                <th>Inventory ID</th>
+                <th>รายการสินค้า</th>
+                <th>จำนวนรวม</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <tr>
+                <td colspan="3" class="text-center text-gray-500">คลิก "โหลดข้อมูล" เพื่อดูรายงาน</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- HISTORY TAB -->
+    <div id="history" class="tab-content">
+      <div class="glass-solid p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">📜 ประวัติการเคลื่อนไหว</h2>
+        
+        <div class="mb-6">
+          <label class="block mb-2 font-semibold">ค้นหา Inventory ID:</label>
+          <div class="flex gap-2">
+            <input type="text" id="historySearchId" placeholder="Inventory ID..." class="flex-1">
+            <button class="btn btn-primary btn-small" onclick="loadHistory()">🔍 ค้นหา</button>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>วันที่/เวลา</th>
+                <th>Inventory ID</th>
+                <th>Action</th>
+                <th>รายละเอียด</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="4" class="text-center text-gray-500">กำลังโหลด...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- PRINT TAB -->
+    <div id="print" class="tab-content">
+      <div class="glass-solid p-6 mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">🖨️ พิมพ์ป้ายสินค้า</h2>
+        
+        <div class="mb-6">
+          <label class="block mb-2 font-semibold">เลือก Inventory ID เพื่อพิมพ์:</label>
+          <select id="printInventorySelect" class="w-full mb-4">
+            <option value="">-- เลือก Inventory ID --</option>
+          </select>
+        </div>
+        
+        <div class="flex gap-4 mb-6">
+          <button class="btn btn-primary" onclick="loadPrintPreview()">👁️ ดูตัวอย่าง</button>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ พิมพ์</button>
+        </div>
+        
+        <div id="printPreview" class="text-center"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- LOADING MODAL -->
+  <div id="loadingModal" class="modal">
+    <div class="modal-content text-center">
+      <div class="spinner mb-4"></div>
+      <p id="loadingText">กำลังโหลด...</p>
+    </div>
+  </div>
+  
+  <!-- CONFIRM MODAL -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-xl font-bold mb-4" id="confirmTitle">ยืนยัน</h3>
+      <p id="confirmMessage" class="mb-6"></p>
+      <div class="flex gap-4">
+        <button class="btn btn-primary flex-1" onclick="confirmAction()">ตกลง</button>
+        <button class="btn btn-secondary flex-1" onclick="closeModal('confirmModal')">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APP = {
+      scriptUrl: 'https://script.google.com/macros/s/AKfycbxHEB6uiDgzGPA4ha47iuj0US-abP3jnxgoJtee_F6Q8sAmWJfT3tK67KC1ibryJsr6/exec', // Will be set to GAS deployment URL
+      currentTab: 'scan',
+      currentInventory: null,
+      currentUnits: [],
+      zoomLevel: 1,
+      confirmCallback: null
+    };
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadInventoryList();
+      await startCamera();
+      loadHistory();
+    });
+    
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+      APP.currentTab = tabName;
+      
+      if (tabName === 'report') loadStockSummary();
+      if (tabName === 'history') loadHistory();
+      if (tabName === 'print') loadPrintInventoryList();
+    }
+    
+    async function startCamera() {
+      try {
+        const constraints = {
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = stream;
+        detectBarcodes(video);
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้: ' + error.message);
+      }
+    }
+    
+    function setZoom(value) {
+      APP.zoomLevel = parseFloat(value);
+      document.getElementById('zoomValue').textContent = value + 'x';
+      const video = document.getElementById('cameraPreview');
+      video.style.transform = `scale(${APP.zoomLevel})`;
+    }
+    
+    async function detectBarcodes(video) {
+      if (!window.BarcodeDetector) {
+        showAlert('⚠️ สัญญาณเตือน', 'Barcode Detection ไม่รองรับบนเบราว์เซอร์นี้\nกรุณากรอก Barcode ด้วยตนเอง');
+        return;
+      }
+      
+      const barcodeDetector = new BarcodeDetector({
+        formats: ['qr_code', 'ean_13', 'ean_8', 'code_128']
+      });
+      
+      async function scan() {
+        try {
+          const barcodes = await barcodeDetector.detect(video);
+          if (barcodes.length > 0) {
+            const barcode = barcodes[0].rawValue;
+            document.getElementById('manualBarcodeInput').value = barcode;
+            scanManualBarcode();
+          }
+        } catch (e) {
+          // Continue scanning
+        }
+        requestAnimationFrame(scan);
+      }
+      
+      scan();
+    }
+    
+    function handleBarcodeKeyPress(e) {
+      if (e.key === 'Enter') {
+        scanManualBarcode();
+      }
+    }
+    
+    async function scanManualBarcode() {
+      const barcode = document.getElementById('manualBarcodeInput').value.trim();
+      if (!barcode) {
+        showAlert('⚠️ ข้อผิดพลาด', 'กรุณากรอก Barcode');
+        return;
+      }
+      
+      if (!APP.currentInventory) {
+        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาเลือก Inventory ID ก่อน');
+        return;
+      }
+      
+      showLoading('กำลังตรวจสอบ Barcode...');
+      
+      try {
+        const response = await callGAS('verifyBarcode', [barcode, APP.currentInventory.id]);
+        
+        if (response.valid) {
+          const unit = APP.currentUnits.find(u => u.matUnitId === response.matUnitId);
+          if (unit) {
+            unit.scanned = (unit.scanned || 0) + 1;
+            
+            if (unit.scanned > unit.quantity) {
+              showWarning('⚠️ เกินจำนวน', `${response.matUnit} จำนวนที่สแกนเกินจำนวนที่ตั้งไว้ (${unit.scanned}/${unit.quantity})`);
+            } else {
+              showSuccess('✓ สแกนสำเร็จ', `${response.matUnit} (${unit.scanned}/${unit.quantity})`);
+            }
+            
+            updateUnitsDisplay();
+            updateStockInTable();
+          }
+        } else {
+          showAlert('❌ ข้อผิดพลาด', 'Barcode ไม่ถูกต้องหรือไม่พบในระบบ');
+        }
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message);
+      }
+      
+      document.getElementById('manualBarcodeInput').value = '';
+      hideLoading();
+    }
+    
+    async function loadInventoryList() {
+      try {
+        showLoading('กำลังโหลดรายการ Inventory...');
+        const data = await callGAS('getInventoryList', []);
+        
+        const select = document.getElementById('inventorySelect');
+        select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
+        
+        data.forEach(item => {
+          const option = document.createElement('option');
+          option.value = JSON.stringify(item);
+          option.textContent = `${item.id} - ${item.delivery}`;
+          select.appendChild(option);
+        });
+        
+        loadPrintInventoryList();
+        hideLoading();
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูล: ' + error.message);
+        hideLoading();
+      }
+    }
+    
+    function onInventoryChange() {
+      const select = document.getElementById('inventorySelect');
+      const value = select.value;
+      
+      if (!value) {
+        APP.currentInventory = null;
+        APP.currentUnits = [];
+        updateUnitsDisplay();
+        return;
+      }
+      
+      APP.currentInventory = JSON.parse(value);
+      loadUnits();
+    }
+    
+    async function loadUnits() {
+      try {
+        showLoading('กำลังโหลดรายการหน่วย...');
+        const units = await callGAS('getUnitsByInventoryId', [APP.currentInventory.id]);
+        
+        APP.currentUnits = units;
+        updateUnitsDisplay();
+        updateStockInDisplay();
+        hideLoading();
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูล: ' + error.message);
+        hideLoading();
+      }
+    }
+    
+    function updateUnitsDisplay() {
+      const container = document.getElementById('unitsDisplay');
+      
+      if (!APP.currentUnits || APP.currentUnits.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500">ไม่มีรายการหน่วย</p>';
+        return;
+      }
+      
+      container.innerHTML = APP.currentUnits.map((unit, idx) => {
+        const percentage = (unit.scanned / unit.quantity) * 100;
+        let className = 'unit-item';
+        
+        if (unit.scanned > unit.quantity) {
+          className += ' danger';
+        } else if (unit.scanned >= unit.quantity) {
+          className += ' success';
+        } else if (unit.scanned > 0) {
+          className += ' warning';
+        }
+        
+        return `
+          <div class="${className}">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h4 class="font-semibold">${unit.matUnit}</h4>
+                <p class="text-sm opacity-70">${unit.matUnitId}</p>
+              </div>
+              <span class="text-lg font-bold">${unit.scanned}/${unit.quantity}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+            </div>
+            ${unit.scanned > unit.quantity ? '<p class="text-sm mt-2 text-red-600">⚠️ เกินจำนวน</p>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function updateStockInDisplay() {
+      if (!APP.currentInventory) return;
+      
+      document.getElementById('stockinInventoryId').value = APP.currentInventory.id;
+      document.getElementById('stockinShipmentId').value = APP.currentInventory.shipmentId;
+      document.getElementById('stockinDelivery').value = APP.currentInventory.delivery;
+      
+      updateStockInTable();
+    }
+    
+    function updateStockInTable() {
+      const tbody = document.getElementById('stockinTableBody');
+      
+      if (!APP.currentUnits || APP.currentUnits.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">ไม่มีรายการ</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = APP.currentUnits.map((unit, idx) => {
+        const remaining = unit.quantity - unit.scanned;
+        let statusClass = '';
+        let statusText = '✓ ตกลง';
+        
+        if (unit.scanned > unit.quantity) {
+          statusClass = 'text-red-600';
+          statusText = '⚠️ เกิน';
+        } else if (unit.scanned === unit.quantity) {
+          statusClass = 'text-green-600';
+          statusText = '✓ เสร็จ';
+        } else if (unit.scanned > 0) {
+          statusClass = 'text-yellow-600';
+          statusText = '⏳ บางส่วน';
+        }
+        
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${unit.matUnit}</td>
+            <td>${unit.quantity}</td>
+            <td>${unit.scanned}</td>
+            <td>${remaining}</td>
+            <td class="${statusClass}">${statusText}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    async function submitStockIn() {
+      if (!APP.currentInventory || !APP.currentUnits || APP.currentUnits.length === 0) {
+        showAlert('⚠️ ข้อผิดพลาด', 'ไม่มีข้อมูลสำหรับบันทึก');
+        return;
+      }
+      
+      showConfirm('ยืนยันการบันทึก', 'คุณต้องการบันทึกการรับเข้าสต็อกหรือไม่?', async () => {
+        showLoading('กำลังบันทึกข้อมูล...');
+        
+        try {
+          const result = await callGAS('recordStockIn', [
+            APP.currentInventory.id,
+            APP.currentInventory.shipmentId,
+            APP.currentInventory.delivery,
+            APP.currentUnits
+          ]);
+          
+          if (result.success) {
+            showSuccess('✓ บันทึกสำเร็จ', `Sheet: ${result.sheetName}`);
+            resetStockIn();
+          } else {
+            showAlert('❌ ข้อผิดพลาด', result.error);
+          }
+        } catch (error) {
+          showAlert('❌ ข้อผิดพลาด', error.message);
+        }
+        
+        hideLoading();
+      });
+    }
+    
+    function resetStockIn() {
+      APP.currentInventory = null;
+      APP.currentUnits = [];
+      document.getElementById('inventorySelect').value = '';
+      updateUnitsDisplay();
+      updateStockInDisplay();
+      showSuccess('✓ รีเซ็ตสำเร็จ', '');
+    }
+    
+    async function loadStockSummary() {
+      showLoading('กำลังโหลดรายงาน...');
+      
+      try {
+        const data = await callGAS('getStockSummary', []);
+        const tbody = document.getElementById('reportTableBody');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
+          hideLoading();
+          return;
+        }
+        
+        tbody.innerHTML = data.map(summary => {
+          const itemsHtml = summary.items.map(item => `• ${item.unit} (${item.qty})`).join('<br>');
+          return `
+            <tr>
+              <td>${summary.id}</td>
+              <td>${itemsHtml}</td>
+              <td>${summary.totalQty}</td>
+            </tr>
+          `;
+        }).join('');
+        
+        hideLoading();
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', error.message);
+        hideLoading();
+      }
+    }
+    
+    async function loadHistory() {
+      try {
+        const searchId = document.getElementById('historySearchId').value.trim();
+        const data = await callGAS('getHistory', [searchId || null]);
+        const tbody = document.getElementById('historyTableBody');
+        
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.map(record => `
+          <tr>
+            <td>${record.date}</td>
+            <td>${record.inventoryId}</td>
+            <td>${record.action}</td>
+            <td>${record.detail}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', error.message);
+      }
+    }
+    
+    async function loadPrintInventoryList() {
+      try {
+        const data = await callGAS('getInventoryList', []);
+        const select = document.getElementById('printInventorySelect');
+        select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
+        
+        data.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = `${item.id} - ${item.delivery}`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', error.message);
+      }
+    }
+    
+    async function loadPrintPreview() {
+      const inventoryId = document.getElementById('printInventorySelect').value;
+      
+      if (!inventoryId) {
+        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาเลือก Inventory ID');
+        return;
+      }
+      
+      showLoading('กำลังโหลดข้อมูลพิมพ์...');
+      
+      try {
+        const data = await callGAS('getPrintData', [inventoryId]);
+        
+        if (!data) {
+          showAlert('❌ ข้อผิดพลาด', 'ไม่พบข้อมูลสำหรับพิมพ์');
+          hideLoading();
+          return;
+        }
+        
+        const preview = document.getElementById('printPreview');
+        preview.innerHTML = `
+          <div class="print-section">
+            <div class="label-template">
+              <div class="label-row">
+                <span>Shipment ID</span>
+                <span>${data.shipmentId}</span>
+              </div>
+              <div class="label-row">
+                <span>Doc No</span>
+                <span>${data.docNo}</span>
+              </div>
+              <div class="label-row">
+                <span>Inventory ID</span>
+                <span>${data.inventoryId}</span>
+              </div>
+              <div style="border-top: 1px solid #000; margin: 8px 0;"></div>
+              <div class="label-row">
+                <span>Weight</span>
+                <span>${data.bw}</span>
+              </div>
+              <div class="label-row">
+                <span>Ship Date</span>
+                <span>${data.shipDate}</span>
+              </div>
+              <div class="qr-code">
+                📱 QR/Barcode<br>
+                ${data.barCode}
+              </div>
+              <div style="text-align: center; font-size: 9px; margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
+                Printed: ${data.printDate}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        hideLoading();
+      } catch (error) {
+        showAlert('❌ ข้อผิดพลาด', error.message);
+        hideLoading();
+      }
+    }
+    
+    async function callGAS(functionName, params) {
+      return new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          [functionName](...params);
+      });
+    }
+    
+    function showAlert(title, message) {
+      const container = document.getElementById('alertContainer');
+      const type = title.includes('❌') ? 'error' : title.includes('✓') ? 'success' : title.includes('⚠️') ? 'warning' : 'info';
+      
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = `<strong>${title}</strong><br>${message}`;
+      
+      container.appendChild(alert);
+      setTimeout(() => alert.remove(), 5000);
+    }
+    
+    function showSuccess(title, message) {
+      showAlert(title, message);
+    }
+    
+    function showWarning(title, message) {
+      showAlert(title, message);
+    }
+    
+    function showLoading(text = 'กำลังโหลด...') {
+      document.getElementById('loadingText').textContent = text;
+      document.getElementById('loadingModal').classList.add('active');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingModal').classList.remove('active');
+    }
+    
+    function showConfirm(title, message, callback) {
+      APP.confirmCallback = callback;
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      document.getElementById('confirmModal').classList.add('active');
+    }
+    
+    function confirmAction() {
+      closeModal('confirmModal');
+      if (APP.confirmCallback) APP.confirmCallback();
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+  </script>
+</body>
+</html>
