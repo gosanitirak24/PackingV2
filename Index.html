@@ -1,1118 +1,602 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Packing App v2.2 - ระบบรับเข้าสต็อก</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <style>
-    :root {
-      --color-primary: #B8EA85;
-      --color-secondary: #3E870D;
-      --color-bg: #E0E3E5;
-      --color-dark: #1a1a1a;
-      --color-light: #f5f5f5;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, var(--color-bg) 0%, #d0d3d8 100%);
-      min-height: 100vh;
-      color: var(--color-dark);
-    }
-    
-    .glass {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    .glass-solid {
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    }
-    
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: linear-gradient(135deg, rgba(184, 234, 133, 0.8), rgba(62, 135, 13, 0.8));
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    }
-    
-    .navbar h1 {
-      color: white;
-      font-weight: 700;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    
-    .tab-btn {
-      padding: 10px 20px;
-      border: none;
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(0, 0, 0, 0.6);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border-radius: 8px;
-      margin: 0 5px;
-      font-weight: 500;
-    }
-    
-    .tab-btn.active {
-      background: var(--color-primary);
-      color: var(--color-secondary);
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(184, 234, 133, 0.4);
-    }
-    
-    .tab-btn:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    input, select, textarea {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 10px 12px;
-      border-radius: 8px;
-      color: var(--color-dark);
-      transition: all 0.3s ease;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      background: rgba(255, 255, 255, 0.35);
-      border-color: var(--color-primary);
-      box-shadow: 0 0 15px rgba(184, 234, 133, 0.3);
-    }
-    
-    input::placeholder {
-      color: rgba(0, 0, 0, 0.4);
-    }
-    
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.5px;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, var(--color-primary), #a8d85a);
-      color: var(--color-secondary);
-      box-shadow: 0 4px 15px rgba(184, 234, 133, 0.4);
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(184, 234, 133, 0.6);
-    }
-    
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .btn-secondary {
-      background: rgba(62, 135, 13, 0.7);
-      color: white;
-    }
-    
-    .btn-secondary:hover {
-      background: var(--color-secondary);
-      transform: translateY(-2px);
-    }
-    
-    .btn-small {
-      padding: 8px 16px;
-      font-size: 0.75rem;
-    }
-    
-    .btn-danger {
-      background: rgba(220, 38, 38, 0.7);
-      color: white;
-    }
-    
-    .btn-danger:hover {
-      background: #dc2626;
-    }
-    
-    #cameraPreview {
-      width: 100%;
-      max-height: 400px;
-      border-radius: 12px;
-      object-fit: cover;
-      background: #000;
-    }
-    
-    #zoomSlider {
-      width: 100%;
-      height: 6px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: rgba(255, 255, 255, 0.3);
-      outline: none;
-      border-radius: 3px;
-    }
-    
-    #zoomSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      background: var(--color-primary);
-      cursor: pointer;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
-    
-    #zoomSlider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      background: var(--color-primary);
-      cursor: pointer;
-      border-radius: 50%;
-      border: none;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
-    
-    .table-container {
-      overflow-x: auto;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    
-    th {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      color: white;
-      padding: 12px;
-      text-align: left;
-      font-weight: 600;
-    }
-    
-    td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      color: var(--color-dark);
-    }
-    
-    tr:hover {
-      background: rgba(184, 234, 133, 0.1);
-    }
-    
-    .alert {
-      padding: 15px 20px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      animation: slideDown 0.3s ease-out;
-    }
-    
-    .alert-success {
-      background: rgba(34, 197, 94, 0.2);
-      border-left: 4px solid #22c55e;
-      color: #166534;
-    }
-    
-    .alert-error {
-      background: rgba(239, 68, 68, 0.2);
-      border-left: 4px solid #ef4444;
-      color: #991b1b;
-    }
-    
-    .alert-warning {
-      background: rgba(251, 191, 36, 0.2);
-      border-left: 4px solid #fbbf24;
-      color: #92400e;
-    }
-    
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal.active {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 15px;
-      padding: 30px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-    
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid var(--color-primary);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .unit-item {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-      transition: all 0.3s ease;
-    }
-    
-    .unit-item:hover {
-      background: rgba(184, 234, 133, 0.2);
-      border-color: var(--color-primary);
-    }
-    
-    .unit-item.warning {
-      background: rgba(251, 191, 36, 0.2);
-      border-color: #fbbf24;
-    }
-    
-    .unit-item.danger {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-    }
-    
-    .progress-bar {
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-      height: 8px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .progress-bar-fill {
-      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-      height: 100%;
-      transition: width 0.3s ease;
-    }
-    
-    @media (max-width: 768px) {
-      .navbar { padding: 12px 15px; }
-      .navbar h1 { font-size: 1.3rem; }
-      .tab-btn { padding: 8px 12px; font-size: 0.85rem; margin: 0 3px; }
-      .glass-solid { margin: 10px; }
-      .btn { width: 100%; margin-bottom: 10px; }
-      table { font-size: 0.85rem; }
-      th, td { padding: 8px; }
-      input, select { font-size: 16px; }
-    }
-    
-    .label-template {
-      width: 10cm;
-      height: 15cm;
-      border: 2px solid #000;
-      padding: 10px;
-      margin: 10px;
-      background: white;
-      color: black;
-      display: inline-block;
-      font-family: Arial, sans-serif;
-      font-size: 11px;
-      page-break-inside: avoid;
-    }
-    
-    .label-template .label-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    
-    @media print {
-      body { background: white; color: black; }
-      .navbar, .tabs, .tab-controls, .btn { display: none !important; }
-      .print-section { page-break-inside: avoid; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Packing - ระบบรับเข้าสต็อก</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{
+    --c-primary:#B8EA85;
+    --c-secondary:#3E870D;
+    --c-bg:#E0E3E5;
+  }
+  body{
+    background: linear-gradient(135deg, var(--c-bg) 0%, #cfd6da 100%);
+    min-height:100vh;
+    font-family: 'Segoe UI', 'Sarabun', sans-serif;
+  }
+  .glass{
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 8px 32px rgba(62,135,13,0.15);
+  }
+  .glass-strong{
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.7);
+  }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
+    color:white; font-weight:600;
+    box-shadow: 0 4px 14px rgba(62,135,13,0.35);
+    transition: all .15s ease;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); box-shadow:0 6px 18px rgba(62,135,13,0.45); }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+  .tab-btn.active{
+    background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
+    color:white;
+  }
+  .radio-card{
+    transition: all .15s ease;
+    cursor:pointer;
+  }
+  .radio-card.selected{
+    border-color: var(--c-secondary) !important;
+    background: rgba(184,234,133,0.35) !important;
+  }
+  .radio-card.exceeded{
+    border-color:#dc2626 !important;
+    background: rgba(220,38,38,0.12) !important;
+  }
+  .radio-card.complete{
+    border-color:var(--c-secondary) !important;
+  }
+  #reader{ border-radius: 16px; overflow:hidden; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background: var(--c-secondary); border-radius:4px; }
+  .toast{ animation: slideIn .25s ease; }
+  @keyframes slideIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:translateY(0);} }
+  .spin{ animation: spin 1s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  @media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{ position:absolute; top:0; left:0; width:10cm; height:15cm; }
+    .no-print{ display:none !important; }
+  }
+</style>
 </head>
-<body>
-  <div class="navbar">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl">📦 Packing App v2.2</h1>
-      <div class="text-white text-sm">ระบบรับเข้าสต็อก (Vercel + GAS)</div>
-    </div>
-  </div>
-  
-  <div class="max-w-7xl mx-auto px-4 py-6">
-    <div id="alertContainer"></div>
-    
-    <div class="glass-solid mb-6 p-4 sticky top-20 z-40">
-      <div class="flex flex-wrap gap-2 justify-center md:justify-start">
-        <button class="tab-btn active" onclick="switchTab('scan')">🔍 สแกน</button>
-        <button class="tab-btn" onclick="switchTab('stockin')">📥 รับเข้า</button>
-        <button class="tab-btn" onclick="switchTab('report')">📊 รายงาน</button>
-        <button class="tab-btn" onclick="switchTab('history')">📜 ประวัติ</button>
-        <button class="tab-btn" onclick="switchTab('print')">🖨️ พิมพ์</button>
-      </div>
-    </div>
-    
-    <!-- SCAN TAB -->
-    <div id="scan" class="tab-content active">
-      <div class="glass-solid p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4 text-center">🔍 สแกน Barcode / QR Code</h2>
-        
-        <div class="mb-6">
-          <label class="block mb-2 font-semibold">เลือก Inventory ID:</label>
-          <select id="inventorySelect" onchange="onInventoryChange()" class="w-full mb-4">
-            <option value="">-- เลือก Inventory ID --</option>
-          </select>
-        </div>
-        
-        <div class="bg-black rounded-12 mb-6 overflow-hidden">
-          <video id="cameraPreview" autoplay playsinline></video>
-        </div>
-        
-        <div class="mb-6">
-          <label class="block mb-2 font-semibold">🔎 ซูม:</label>
-          <input type="range" id="zoomSlider" min="1" max="4" step="0.1" value="1" onchange="setZoom(this.value)">
-          <div class="text-center mt-2 text-sm">Zoom: <span id="zoomValue">1.0x</span></div>
-        </div>
-        
-        <div class="mb-6">
-          <label class="block mb-2 font-semibold">หรือกรอก Barcode ด้วยตนเอง:</label>
-          <input type="text" id="manualBarcodeInput" placeholder="สแกน Barcode ที่นี่..." class="w-full mb-2" onkeypress="handleBarcodeKeyPress(event)">
-          <button class="btn btn-primary w-full" onclick="scanManualBarcode()">ยืนยันการสแกน</button>
-        </div>
-        
-        <div id="unitsDisplay" class="mb-6"></div>
-      </div>
-    </div>
-    
-    <!-- STOCK IN TAB -->
-    <div id="stockin" class="tab-content">
-      <div class="glass-solid p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4 text-center">📥 บันทึกการรับเข้าสต็อก</h2>
-        
-        <div class="grid md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label class="block mb-2 font-semibold">Inventory ID:</label>
-            <input type="text" id="stockinInventoryId" readonly class="w-full bg-gray-200">
-          </div>
-          <div>
-            <label class="block mb-2 font-semibold">Shipment ID:</label>
-            <input type="text" id="stockinShipmentId" readonly class="w-full bg-gray-200">
-          </div>
-          <div class="md:col-span-2">
-            <label class="block mb-2 font-semibold">Delivery:</label>
-            <input type="text" id="stockinDelivery" readonly class="w-full bg-gray-200">
-          </div>
-        </div>
-        
-        <div class="table-container mb-6">
-          <table id="stockinTable">
-            <thead>
-              <tr>
-                <th>ลำดับ</th>
-                <th>MATUnit</th>
-                <th>จำนวนตามค่าสั่ง</th>
-                <th>สแกนแล้ว</th>
-                <th>คงเหลือ</th>
-                <th>สถานะ</th>
-              </tr>
-            </thead>
-            <tbody id="stockinTableBody">
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="grid md:grid-cols-2 gap-4">
-          <button class="btn btn-primary" onclick="submitStockIn()">✓ บันทึกการรับเข้า</button>
-          <button class="btn btn-secondary" onclick="resetStockIn()">🔄 รีเซ็ต</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- REPORT TAB -->
-    <div id="report" class="tab-content">
-      <div class="glass-solid p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4 text-center">📊 รายงานสต็อกคงเหลือ</h2>
-        
-        <button class="btn btn-primary mb-6" onclick="loadStockSummary()">🔄 โหลดข้อมูล</button>
-        
-        <div class="table-container">
-          <table id="reportTable">
-            <thead>
-              <tr>
-                <th>Inventory ID</th>
-                <th>รายการสินค้า</th>
-                <th>จำนวนรวม</th>
-              </tr>
-            </thead>
-            <tbody id="reportTableBody">
-              <tr>
-                <td colspan="3" class="text-center text-gray-500">คลิก "โหลดข้อมูล" เพื่อดูรายงาน</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
-    <!-- HISTORY TAB -->
-    <div id="history" class="tab-content">
-      <div class="glass-solid p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4 text-center">📜 ประวัติการเคลื่อนไหว</h2>
-        
-        <div class="mb-6">
-          <label class="block mb-2 font-semibold">ค้นหา Inventory ID:</label>
-          <div class="flex gap-2">
-            <input type="text" id="historySearchId" placeholder="Inventory ID..." class="flex-1">
-            <button class="btn btn-primary btn-small" onclick="loadHistory()">🔍 ค้นหา</button>
-          </div>
-        </div>
-        
-        <div class="table-container">
-          <table id="historyTable">
-            <thead>
-              <tr>
-                <th>วันที่/เวลา</th>
-                <th>Inventory ID</th>
-                <th>Action</th>
-                <th>รายละเอียด</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <tr>
-                <td colspan="4" class="text-center text-gray-500">กำลังโหลด...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
-    <!-- PRINT TAB -->
-    <div id="print" class="tab-content">
-      <div class="glass-solid p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4 text-center">🖨️ พิมพ์ป้ายสินค้า</h2>
-        
-        <div class="mb-6">
-          <label class="block mb-2 font-semibold">เลือก Inventory ID เพื่อพิมพ์:</label>
-          <select id="printInventorySelect" class="w-full mb-4">
-            <option value="">-- เลือก Inventory ID --</option>
-          </select>
-        </div>
-        
-        <div class="flex gap-4 mb-6">
-          <button class="btn btn-primary" onclick="loadPrintPreview()">👁️ ดูตัวอย่าง</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ พิมพ์</button>
-        </div>
-        
-        <div id="printPreview" class="text-center"></div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- LOADING MODAL -->
-  <div id="loadingModal" class="modal">
-    <div class="modal-content text-center">
-      <div class="spinner mb-4"></div>
-      <p id="loadingText">กำลังโหลด...</p>
-    </div>
-  </div>
-  
-  <!-- CONFIRM MODAL -->
-  <div id="confirmModal" class="modal">
-    <div class="modal-content">
-      <h3 class="text-xl font-bold mb-4" id="confirmTitle">ยืนยัน</h3>
-      <p id="confirmMessage" class="mb-6"></p>
-      <div class="flex gap-4">
-        <button class="btn btn-primary flex-1" onclick="confirmAction()">ตกลง</button>
-        <button class="btn btn-secondary flex-1" onclick="closeModal('confirmModal')">ยกเลิก</button>
-      </div>
-    </div>
-  </div>
+<body class="text-slate-800">
 
-  <script>
-    const APP = {
-      gasUrl: 'https://script.google.com/macros/s/AKfycbyNt40mz05kNloeXvj7t1-2QHk6eHW9tYzTCVuDnbil6yhE3z3mPNjU4IHg9XZcyNs/exec', // ⬅️ UPDATE THIS
-      currentTab: 'scan',
-      currentInventory: null,
-      currentUnits: [],
-      zoomLevel: 1,
-      confirmCallback: null
-    };
-    
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Check if GAS URL is set
-      if (APP.gasUrl.includes('YOUR_SCRIPT_ID')) {
-        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาตั้งค่า GAS deployment URL ใน index.html');
-        return;
-      }
-      await loadInventoryList();
-      await startCamera();
-      loadHistory();
-    });
-    
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      
-      document.getElementById(tabName).classList.add('active');
-      event.target.classList.add('active');
-      APP.currentTab = tabName;
-      
-      if (tabName === 'report') loadStockSummary();
-      if (tabName === 'history') loadHistory();
-      if (tabName === 'print') loadPrintInventoryList();
-    }
-    
-    async function startCamera() {
-      try {
-        const constraints = {
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        };
-        
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        const video = document.getElementById('cameraPreview');
-        video.srcObject = stream;
-        detectBarcodes(video);
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้: ' + error.message);
-      }
-    }
-    
-    function setZoom(value) {
-      APP.zoomLevel = parseFloat(value);
-      document.getElementById('zoomValue').textContent = value + 'x';
-      const video = document.getElementById('cameraPreview');
-      video.style.transform = `scale(${APP.zoomLevel})`;
-    }
-    
-    async function detectBarcodes(video) {
-      if (!window.BarcodeDetector) {
-        showAlert('⚠️ สัญญาณเตือน', 'Barcode Detection ไม่รองรับบนเบราว์เซอร์นี้\nกรุณากรอก Barcode ด้วยตนเอง');
-        return;
-      }
-      
-      const barcodeDetector = new BarcodeDetector({
-        formats: ['qr_code', 'ean_13', 'ean_8', 'code_128']
-      });
-      
-      async function scan() {
-        try {
-          const barcodes = await barcodeDetector.detect(video);
-          if (barcodes.length > 0) {
-            const barcode = barcodes[0].rawValue;
-            document.getElementById('manualBarcodeInput').value = barcode;
-            scanManualBarcode();
-          }
-        } catch (e) {
-          // Continue scanning
-        }
-        requestAnimationFrame(scan);
-      }
-      
-      scan();
-    }
-    
-    function handleBarcodeKeyPress(e) {
-      if (e.key === 'Enter') {
-        scanManualBarcode();
-      }
-    }
-    
-    async function scanManualBarcode() {
-      const barcode = document.getElementById('manualBarcodeInput').value.trim();
-      if (!barcode) {
-        showAlert('⚠️ ข้อผิดพลาด', 'กรุณากรอก Barcode');
-        return;
-      }
-      
-      if (!APP.currentInventory) {
-        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาเลือก Inventory ID ก่อน');
-        return;
-      }
-      
-      showLoading('กำลังตรวจสอบ Barcode...');
-      
-      try {
-        const response = await callGAS('verifyBarcode', {
-          barcode,
-          inventoryId: APP.currentInventory.id
-        });
-        
-        if (response.valid) {
-          const unit = APP.currentUnits.find(u => u.matUnitId === response.matUnitId);
-          if (unit) {
-            unit.scanned = (unit.scanned || 0) + 1;
-            
-            if (unit.scanned > unit.quantity) {
-              showWarning('⚠️ เกินจำนวน', `${response.matUnit} จำนวนที่สแกนเกินจำนวนที่ตั้งไว้ (${unit.scanned}/${unit.quantity})`);
-            } else {
-              showSuccess('✓ สแกนสำเร็จ', `${response.matUnit} (${unit.scanned}/${unit.quantity})`);
-            }
-            
-            updateUnitsDisplay();
-            updateStockInTable();
-          }
-        } else {
-          showAlert('❌ ข้อผิดพลาด', 'Barcode ไม่ถูกต้องหรือไม่พบในระบบ');
-        }
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message);
-      }
-      
-      document.getElementById('manualBarcodeInput').value = '';
-      hideLoading();
-    }
-    
-    async function loadInventoryList() {
-      try {
-        showLoading('กำลังโหลดรายการ Inventory...');
-        const data = await callGAS('getInventoryList');
-        
-        const select = document.getElementById('inventorySelect');
-        select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
-        
-        data.forEach(item => {
-          const option = document.createElement('option');
-          option.value = JSON.stringify(item);
-          option.textContent = `${item.id} - ${item.delivery}`;
-          select.appendChild(option);
-        });
-        
-        loadPrintInventoryList();
-        hideLoading();
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูล: ' + error.message);
-        hideLoading();
-      }
-    }
-    
-    function onInventoryChange() {
-      const select = document.getElementById('inventorySelect');
-      const value = select.value;
-      
-      if (!value) {
-        APP.currentInventory = null;
-        APP.currentUnits = [];
-        updateUnitsDisplay();
-        return;
-      }
-      
-      APP.currentInventory = JSON.parse(value);
-      loadUnits();
-    }
-    
-    async function loadUnits() {
-      try {
-        showLoading('กำลังโหลดรายการหน่วย...');
-        const units = await callGAS('getUnitsByInventoryId', {
-          inventoryId: APP.currentInventory.id
-        });
-        
-        APP.currentUnits = units;
-        updateUnitsDisplay();
-        updateStockInDisplay();
-        hideLoading();
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูล: ' + error.message);
-        hideLoading();
-      }
-    }
-    
-    function updateUnitsDisplay() {
-      const container = document.getElementById('unitsDisplay');
-      
-      if (!APP.currentUnits || APP.currentUnits.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500">ไม่มีรายการหน่วย</p>';
-        return;
-      }
-      
-      container.innerHTML = APP.currentUnits.map((unit, idx) => {
-        const percentage = (unit.scanned / unit.quantity) * 100;
-        let className = 'unit-item';
-        
-        if (unit.scanned > unit.quantity) {
-          className += ' danger';
-        } else if (unit.scanned >= unit.quantity) {
-          className += ' success';
-        } else if (unit.scanned > 0) {
-          className += ' warning';
-        }
-        
-        return `
-          <div class="${className}">
-            <div class="flex justify-between items-start mb-2">
-              <div>
-                <h4 class="font-semibold">${unit.matUnit}</h4>
-                <p class="text-sm opacity-70">${unit.matUnitId}</p>
-              </div>
-              <span class="text-lg font-bold">${unit.scanned}/${unit.quantity}</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-bar-fill" style="width: ${Math.min(percentage, 100)}%"></div>
-            </div>
-            ${unit.scanned > unit.quantity ? '<p class="text-sm mt-2 text-red-600">⚠️ เกินจำนวน</p>' : ''}
-          </div>
-        `;
-      }).join('');
-    }
-    
-    function updateStockInDisplay() {
-      if (!APP.currentInventory) return;
-      
-      document.getElementById('stockinInventoryId').value = APP.currentInventory.id;
-      document.getElementById('stockinShipmentId').value = APP.currentInventory.shipmentId;
-      document.getElementById('stockinDelivery').value = APP.currentInventory.delivery;
-      
-      updateStockInTable();
-    }
-    
-    function updateStockInTable() {
-      const tbody = document.getElementById('stockinTableBody');
-      
-      if (!APP.currentUnits || APP.currentUnits.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">ไม่มีรายการ</td></tr>';
-        return;
-      }
-      
-      tbody.innerHTML = APP.currentUnits.map((unit, idx) => {
-        const remaining = unit.quantity - unit.scanned;
-        let statusClass = '';
-        let statusText = '✓ ตกลง';
-        
-        if (unit.scanned > unit.quantity) {
-          statusClass = 'text-red-600';
-          statusText = '⚠️ เกิน';
-        } else if (unit.scanned === unit.quantity) {
-          statusClass = 'text-green-600';
-          statusText = '✓ เสร็จ';
-        } else if (unit.scanned > 0) {
-          statusClass = 'text-yellow-600';
-          statusText = '⏳ บางส่วน';
-        }
-        
-        return `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>${unit.matUnit}</td>
-            <td>${unit.quantity}</td>
-            <td>${unit.scanned}</td>
-            <td>${remaining}</td>
-            <td class="${statusClass}">${statusText}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    async function submitStockIn() {
-      if (!APP.currentInventory || !APP.currentUnits || APP.currentUnits.length === 0) {
-        showAlert('⚠️ ข้อผิดพลาด', 'ไม่มีข้อมูลสำหรับบันทึก');
-        return;
-      }
-      
-      showConfirm('ยืนยันการบันทึก', 'คุณต้องการบันทึกการรับเข้าสต็อกหรือไม่?', async () => {
-        showLoading('กำลังบันทึกข้อมูล...');
-        
-        try {
-          const result = await callGAS('recordStockIn', {
-            inventoryId: APP.currentInventory.id,
-            shipmentId: APP.currentInventory.shipmentId,
-            delivery: APP.currentInventory.delivery,
-            scannedUnits: APP.currentUnits
-          });
-          
-          if (result.success) {
-            showSuccess('✓ บันทึกสำเร็จ', `Sheet: ${result.sheetName}`);
-            resetStockIn();
-          } else {
-            showAlert('❌ ข้อผิดพลาด', result.error);
-          }
-        } catch (error) {
-          showAlert('❌ ข้อผิดพลาด', error.message);
-        }
-        
-        hideLoading();
-      });
-    }
-    
-    function resetStockIn() {
-      APP.currentInventory = null;
-      APP.currentUnits = [];
-      document.getElementById('inventorySelect').value = '';
-      updateUnitsDisplay();
-      updateStockInDisplay();
-      showSuccess('✓ รีเซ็ตสำเร็จ', '');
-    }
-    
-    async function loadStockSummary() {
-      showLoading('กำลังโหลดรายงาน...');
-      
-      try {
-        const data = await callGAS('getStockSummary');
-        const tbody = document.getElementById('reportTableBody');
-        
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
-          hideLoading();
-          return;
-        }
-        
-        tbody.innerHTML = data.map(summary => {
-          const itemsHtml = summary.items.map(item => `• ${item.unit} (${item.qty})`).join('<br>');
-          return `
-            <tr>
-              <td>${summary.id}</td>
-              <td>${itemsHtml}</td>
-              <td>${summary.totalQty}</td>
+<!-- ============ TOP NAV ============ -->
+<nav class="glass-strong sticky top-0 z-40 no-print">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center btn-primary text-lg">📦</div>
+      <div>
+        <h1 class="font-bold text-lg leading-none" style="color:var(--c-secondary)">Packing</h1>
+        <p class="text-[11px] text-slate-500 leading-none mt-1">ระบบรับเข้าสต็อก</p>
+      </div>
+    </div>
+    <div id="apiStatus" class="text-xs px-3 py-1 rounded-full glass"></div>
+  </div>
+  <div class="max-w-6xl mx-auto px-2 pb-2 flex gap-1 overflow-x-auto">
+    <button class="tab-btn active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="scan">📷 รับเข้าสต็อก</button>
+    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="report">📊 สต็อกคงเหลือ</button>
+    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="history">🕒 ประวัติเคลื่อนไหว</button>
+    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="print">🖨️ พิมพ์ใบสินค้า</button>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto p-4 pb-24">
+
+  <!-- ============ TAB: STOCK-IN / SCAN ============ -->
+  <section id="tab-scan" class="tab-panel space-y-4">
+
+    <div class="glass rounded-2xl p-4 space-y-3">
+      <h2 class="font-semibold" style="color:var(--c-secondary)">1. เลือก Inventory ID</h2>
+      <div class="flex gap-2">
+        <select id="inventorySelect" class="flex-1 rounded-xl border-0 glass-strong px-3 py-2 focus:ring-2 focus:ring-green-600">
+          <option value="">-- เลือก Inventory ID --</option>
+        </select>
+        <button id="btnScanInventory" class="btn-primary rounded-xl px-4 py-2 text-sm">📷 สแกน</button>
+      </div>
+      <div id="shipmentInfoBox" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-2">
+        <div class="glass-strong rounded-xl p-3">
+          <p class="text-slate-500 text-xs">MAT Shipment ID</p>
+          <p class="font-semibold" id="infoShipmentId">-</p>
+        </div>
+        <div class="glass-strong rounded-xl p-3">
+          <p class="text-slate-500 text-xs">Delivery</p>
+          <p class="font-semibold" id="infoDelivery">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="unitsSection" class="glass rounded-2xl p-4 space-y-3 hidden">
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold" style="color:var(--c-secondary)">2. สแกนสินค้า (MATUnitID)</h2>
+        <button id="btnToggleCamera" class="btn-primary rounded-xl px-4 py-2 text-sm">📷 เปิดกล้อง</button>
+      </div>
+
+      <div id="cameraBox" class="hidden space-y-2">
+        <div id="reader" class="w-full"></div>
+        <div class="flex items-center gap-2 glass-strong rounded-xl px-3 py-2">
+          <span class="text-xs text-slate-600 whitespace-nowrap">🔍 ซูม</span>
+          <input id="zoomRange" type="range" min="1" max="5" step="0.1" value="1" class="w-full accent-green-700">
+        </div>
+      </div>
+
+      <div id="unitsList" class="space-y-2"></div>
+      <p class="text-xs text-slate-500">* เลือก (Radio) ได้ด้วยการแตะ หรือสแกน Barcode/QR ให้ระบบเลือกอัตโนมัติ ทุกครั้งที่สแกนจะนับจำนวน +1 อัตโนมัติ</p>
+    </div>
+
+  </section>
+
+  <!-- ============ TAB: REPORT ============ -->
+  <section id="tab-report" class="tab-panel hidden space-y-4">
+    <div class="glass rounded-2xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold" style="color:var(--c-secondary)">📊 รายงานสต็อกคงเหลือ</h2>
+        <button id="btnRefreshReport" class="btn-primary rounded-xl px-3 py-1.5 text-sm">🔄 รีเฟรช</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-300">
+              <th class="py-2 pr-2">Inventory ID</th>
+              <th class="py-2 pr-2">MATUnitID</th>
+              <th class="py-2 pr-2">MATUnit</th>
+              <th class="py-2 pr-2 text-right">เป้าหมาย</th>
+              <th class="py-2 pr-2 text-right">สแกนแล้ว</th>
+              <th class="py-2 pr-2 text-right">คงเหลือ</th>
+              <th class="py-2 pr-2">สถานะ</th>
             </tr>
-          `;
-        }).join('');
-        
-        hideLoading();
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', error.message);
-        hideLoading();
+          </thead>
+          <tbody id="reportBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: HISTORY ============ -->
+  <section id="tab-history" class="tab-panel hidden space-y-4">
+    <div class="glass rounded-2xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold" style="color:var(--c-secondary)">🕒 ประวัติเคลื่อนไหว</h2>
+        <button id="btnRefreshHistory" class="btn-primary rounded-xl px-3 py-1.5 text-sm">🔄 รีเฟรช</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-300">
+              <th class="py-2 pr-2">วันที่/เวลา</th>
+              <th class="py-2 pr-2">Inventory ID</th>
+              <th class="py-2 pr-2">MATUnitID</th>
+              <th class="py-2 pr-2 text-right">ลำดับสแกน</th>
+              <th class="py-2 pr-2">สถานะ</th>
+              <th class="py-2 pr-2">ผู้บันทึก</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: PRINT ============ -->
+  <section id="tab-print" class="tab-panel hidden space-y-4">
+    <div class="glass rounded-2xl p-4 space-y-3 no-print">
+      <h2 class="font-semibold" style="color:var(--c-secondary)">🖨️ พิมพ์ใบสินค้า</h2>
+      <div class="flex gap-2">
+        <select id="printInventorySelect" class="flex-1 rounded-xl border-0 glass-strong px-3 py-2"></select>
+        <button id="btnLoadPrint" class="btn-primary rounded-xl px-4 py-2 text-sm">โหลดข้อมูล</button>
+        <button id="btnDoPrint" class="btn-primary rounded-xl px-4 py-2 text-sm">🖨️ พิมพ์</button>
+      </div>
+      <p class="text-xs text-slate-500">ขนาดฉลาก: 10 × 15 ซม. (สามารถส่ง Template ตัวอย่างเพิ่มเติมเพื่อปรับแบบฟอร์มให้ตรงความต้องการ)</p>
+    </div>
+
+    <div id="printArea" class="glass-strong rounded-2xl p-6 mx-auto" style="width:10cm;min-height:15cm;">
+      <div class="text-center border-b-2 pb-2 mb-3" style="border-color:var(--c-secondary)">
+        <h3 class="font-bold text-lg">ใบรับเข้าสินค้า</h3>
+        <p class="text-xs text-slate-500" id="pPrintedAt"></p>
+      </div>
+      <div class="text-sm space-y-1">
+        <p><b>Inventory ID:</b> <span id="pInventoryId"></span></p>
+        <p><b>MAT Shipment ID:</b> <span id="pShipmentId"></span></p>
+        <p><b>Delivery:</b> <span id="pDelivery"></span></p>
+        <p><b>Container:</b> <span id="pContainer"></span></p>
+        <p><b>วันที่:</b> <span id="pDate"></span></p>
+      </div>
+      <div class="flex justify-center my-3">
+        <div id="qrcodeBox"></div>
+      </div>
+      <table class="w-full text-xs border-t pt-2" style="border-color:var(--c-secondary)">
+        <thead><tr class="text-left"><th>MATUnitID</th><th>Unit</th><th class="text-right">จำนวน</th></tr></thead>
+        <tbody id="pUnitsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast container -->
+<div id="toastBox" class="fixed bottom-4 right-4 z-50 space-y-2 no-print"></div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
+  <div class="glass-strong rounded-2xl px-6 py-4 flex items-center gap-3">
+    <div class="w-6 h-6 border-4 border-green-700 border-t-transparent rounded-full spin"></div>
+    <span class="font-medium">กำลังโหลด...</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+/* ==================== CONFIG ====================
+   วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbylkEEeIgQgAHoYka4M75O9RCUg9YV_846RFBPv1kbsPF432TaKRlgMEpeGwlNTwdmu/exec';
+/* ================================================= */
+
+let state = {
+  inventoryId: null,
+  shipmentInfo: null,
+  units: [],
+  selectedUnitId: null,
+  html5Qr: null,
+  cameraOn: false
+};
+
+// ---------- UTIL ----------
+function showLoading(v){ document.getElementById('loadingOverlay').classList.toggle('hidden', !v); }
+function toast(msg, type){
+  type = type || 'success';
+  const colors = { success:'bg-green-600', error:'bg-red-600', warn:'bg-amber-500' };
+  const el = document.createElement('div');
+  el.className = `toast text-white text-sm px-4 py-2 rounded-xl shadow-lg ${colors[type]}`;
+  el.textContent = msg;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=> el.remove(), 3500);
+}
+
+async function apiGet(action, params){
+  params = params || {};
+  const url = new URL(GAS_API_URL);
+  url.searchParams.set('action', action);
+  Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+  const res = await fetch(url.toString());
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'เกิดข้อผิดพลาด');
+  return json.data;
+}
+
+async function apiPost(action, payload){
+  payload = Object.assign({ action }, payload);
+  const res = await fetch(GAS_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'เกิดข้อผิดพลาด');
+  return json.data;
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
+    document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    if (btn.dataset.tab === 'report') loadReport();
+    if (btn.dataset.tab === 'history') loadHistory();
+    if (btn.dataset.tab === 'print') loadPrintDropdown();
+  });
+});
+
+// ---------- INIT ----------
+async function init(){
+  showLoading(true);
+  try{
+    await apiGet('inventoryList').then(list=>{
+      document.getElementById('apiStatus').textContent = '🟢 เชื่อมต่อสำเร็จ';
+      fillInventorySelect(list);
+    });
+  }catch(err){
+    document.getElementById('apiStatus').textContent = '🔴 เชื่อมต่อไม่สำเร็จ';
+    toast('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message, 'error');
+  }finally{
+    showLoading(false);
+  }
+}
+
+function fillInventorySelect(list){
+  const sel = document.getElementById('inventorySelect');
+  sel.innerHTML = '<option value="">-- เลือก Inventory ID --</option>' +
+    list.map(id => `<option value="${id}">${id}</option>`).join('');
+  const psel = document.getElementById('printInventorySelect');
+  psel.innerHTML = list.map(id => `<option value="${id}">${id}</option>`).join('');
+}
+
+// ---------- STEP 1: SELECT INVENTORY ----------
+document.getElementById('inventorySelect').addEventListener('change', async (e)=>{
+  const id = e.target.value;
+  if (!id) return;
+  await loadInventory(id);
+});
+
+async function loadInventory(id){
+  showLoading(true);
+  try{
+    state.inventoryId = id;
+    const info = await apiGet('shipmentInfo', { inventoryId: id });
+    state.shipmentInfo = info;
+    document.getElementById('infoShipmentId').textContent = info.shipmentId || '-';
+    document.getElementById('infoDelivery').textContent = info.delivery || '-';
+    document.getElementById('shipmentInfoBox').classList.remove('hidden');
+
+    const units = await apiGet('units', { inventoryId: id });
+    state.units = units;
+    renderUnits();
+    document.getElementById('unitsSection').classList.remove('hidden');
+  }catch(err){
+    toast(err.message, 'error');
+  }finally{
+    showLoading(false);
+  }
+}
+
+function renderUnits(){
+  const box = document.getElementById('unitsList');
+  if (state.units.length === 0){
+    box.innerHTML = '<p class="text-sm text-slate-500">ไม่พบรายการสินค้าของ Inventory ID นี้ในชีท IS</p>';
+    return;
+  }
+  box.innerHTML = state.units.map(u=>{
+    const cls = u.exceeded ? 'exceeded' : (u.remaining <= 0 ? 'complete' : '');
+    const selected = state.selectedUnitId === u.matUnitId ? 'selected' : '';
+    return `
+    <label class="radio-card ${cls} ${selected} flex items-center justify-between glass-strong rounded-xl p-3 border-2 border-transparent" data-unit="${u.matUnitId}">
+      <div class="flex items-center gap-3">
+        <input type="radio" name="unitRadio" value="${u.matUnitId}" class="w-4 h-4 accent-green-700" ${selected ? 'checked':''}>
+        <div>
+          <p class="font-semibold text-sm">${u.matUnitId}</p>
+          <p class="text-xs text-slate-500">${u.matUnit}</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-sm font-bold" style="color:var(--c-secondary)">${u.scanned}/${u.quantity}</p>
+        <p class="text-xs ${u.exceeded ? 'text-red-600 font-semibold' : 'text-slate-500'}">${u.exceeded ? 'เกินจำนวน!' : (u.remaining<=0 ? 'ครบแล้ว' : 'คงเหลือ ' + u.remaining)}</p>
+      </div>
+    </label>`;
+  }).join('');
+
+  box.querySelectorAll('.radio-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      state.selectedUnitId = card.dataset.unit;
+      renderUnits();
+    });
+  });
+}
+
+// ---------- CAMERA SCANNING ----------
+document.getElementById('btnToggleCamera').addEventListener('click', toggleCamera);
+document.getElementById('btnScanInventory').addEventListener('click', ()=> quickScan('inventory'));
+
+let quickScanMode = null;
+
+async function toggleCamera(){
+  if (state.cameraOn){
+    await stopCamera();
+    return;
+  }
+  document.getElementById('cameraBox').classList.remove('hidden');
+  document.getElementById('btnToggleCamera').textContent = '⏹️ ปิดกล้อง';
+  state.html5Qr = new Html5Qrcode('reader');
+  const config = { fps: 12, qrbox: { width: 260, height: 180 } };
+  try{
+    await state.html5Qr.start(
+      { facingMode: 'environment' },
+      config,
+      onScanSuccess,
+      ()=>{}
+    );
+    state.cameraOn = true;
+    setupZoom();
+  }catch(err){
+    toast('เปิดกล้องไม่สำเร็จ: ' + err.message, 'error');
+    document.getElementById('cameraBox').classList.add('hidden');
+    document.getElementById('btnToggleCamera').textContent = '📷 เปิดกล้อง';
+  }
+}
+
+async function stopCamera(){
+  if (state.html5Qr){
+    try{ await state.html5Qr.stop(); await state.html5Qr.clear(); }catch(e){}
+  }
+  state.cameraOn = false;
+  document.getElementById('cameraBox').classList.add('hidden');
+  document.getElementById('btnToggleCamera').textContent = '📷 เปิดกล้อง';
+}
+
+function setupZoom(){
+  const range = document.getElementById('zoomRange');
+  range.oninput = async ()=>{
+    try{
+      const track = state.html5Qr?.getRunningTrackCameraCapabilities?.();
+      if (track && track.zoomFeature && track.zoomFeature().isSupported()){
+        track.zoomFeature().apply(parseFloat(range.value));
       }
+    }catch(e){}
+  };
+}
+
+let lastScanTime = 0;
+async function onScanSuccess(decodedText){
+  const now = Date.now();
+  if (now - lastScanTime < 1200) return; // กันสแกนซ้ำถี่เกินไป
+  lastScanTime = now;
+
+  if (quickScanMode === 'inventory'){
+    document.getElementById('inventorySelect').value = decodedText;
+    await loadInventory(decodedText);
+    toast('เลือก Inventory ID: ' + decodedText);
+    quickScanMode = null;
+    return;
+  }
+
+  // จับคู่กับ MATUnitID ในรายการ
+  const match = state.units.find(u => u.matUnitId === decodedText);
+  if (!match){
+    toast('ไม่พบรหัสนี้ในรายการสินค้าของ Inventory ที่เลือก: ' + decodedText, 'warn');
+    return;
+  }
+  state.selectedUnitId = match.matUnitId;
+  await submitScan(match);
+}
+
+function quickScan(mode){
+  quickScanMode = mode;
+  if (!state.cameraOn) toggleCamera();
+  toast('พร้อมสแกน Inventory ID');
+}
+
+// ---------- SUBMIT SCAN / STOCK-IN ----------
+async function submitScan(unit){
+  try{
+    const result = await apiPost('stockIn', {
+      inventoryId: state.inventoryId,
+      shipmentId: state.shipmentInfo.shipmentId,
+      delivery: state.shipmentInfo.delivery,
+      matUnitId: unit.matUnitId,
+      matUnit: unit.matUnit,
+      targetQty: unit.quantity,
+      operator: 'เว็บแอป'
+    });
+
+    // อัปเดต state ในหน่วยความจำ
+    const idx = state.units.findIndex(u => u.matUnitId === unit.matUnitId);
+    if (idx > -1){
+      state.units[idx].scanned = result.scanned;
+      state.units[idx].remaining = result.remaining;
+      state.units[idx].exceeded = result.exceeded;
     }
-    
-    async function loadHistory() {
-      try {
-        const searchId = document.getElementById('historySearchId').value.trim();
-        const data = await callGAS('getHistory', {
-          inventoryId: searchId || null
-        });
-        const tbody = document.getElementById('historyTableBody');
-        
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
-          return;
-        }
-        
-        tbody.innerHTML = data.map(record => `
-          <tr>
-            <td>${record.date}</td>
-            <td>${record.inventoryId}</td>
-            <td>${record.action}</td>
-            <td>${record.detail}</td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', error.message);
-      }
+    renderUnits();
+
+    if (result.exceeded){
+      toast(`⚠️ สแกนเกินจำนวน! ${unit.matUnitId} (${result.scanned}/${unit.target})`, 'error');
+    } else {
+      toast(`✅ บันทึก ${unit.matUnitId} (${result.scanned}/${unit.target})`);
     }
-    
-    async function loadPrintInventoryList() {
-      try {
-        const data = await callGAS('getInventoryList');
-        const select = document.getElementById('printInventorySelect');
-        select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
-        
-        data.forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.id;
-          option.textContent = `${item.id} - ${item.delivery}`;
-          select.appendChild(option);
-        });
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', error.message);
-      }
+  }catch(err){
+    toast('บันทึกไม่สำเร็จ: ' + err.message, 'error');
+  }
+}
+
+// manual select + manual +1 (กรณีไม่ใช้กล้อง)
+document.getElementById('unitsList').addEventListener('dblclick', (e)=>{
+  const card = e.target.closest('.radio-card');
+  if (!card) return;
+  const unit = state.units.find(u => u.matUnitId === card.dataset.unit);
+  if (unit) submitScan(unit);
+});
+
+// ---------- REPORT ----------
+async function loadReport(){
+  showLoading(true);
+  try{
+    const data = await apiGet('summary');
+    const body = document.getElementById('reportBody');
+    if (data.length === 0){
+      body.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400">ยังไม่มีข้อมูล</td></tr>';
+      return;
     }
-    
-    async function loadPrintPreview() {
-      const inventoryId = document.getElementById('printInventorySelect').value;
-      
-      if (!inventoryId) {
-        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาเลือก Inventory ID');
-        return;
-      }
-      
-      showLoading('กำลังโหลดข้อมูลพิมพ์...');
-      
-      try {
-        const data = await callGAS('getPrintData', {
-          inventoryId: inventoryId
-        });
-        
-        if (!data) {
-          showAlert('❌ ข้อผิดพลาด', 'ไม่พบข้อมูลสำหรับพิมพ์');
-          hideLoading();
-          return;
-        }
-        
-        const preview = document.getElementById('printPreview');
-        preview.innerHTML = `
-          <div class="print-section">
-            <div class="label-template">
-              <div class="label-row">
-                <span>Shipment ID</span>
-                <span>${data.shipmentId}</span>
-              </div>
-              <div class="label-row">
-                <span>Doc No</span>
-                <span>${data.docNo}</span>
-              </div>
-              <div class="label-row">
-                <span>Inventory ID</span>
-                <span>${data.inventoryId}</span>
-              </div>
-              <div style="border-top: 1px solid #000; margin: 8px 0;"></div>
-              <div class="label-row">
-                <span>Weight</span>
-                <span>${data.bw}</span>
-              </div>
-              <div class="label-row">
-                <span>Ship Date</span>
-                <span>${data.shipDate}</span>
-              </div>
-              <div style="text-align: center; margin-top: 10px; font-size: 9px;">
-                📱 ${data.barCode}
-              </div>
-              <div style="text-align: center; font-size: 8px; margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
-                Printed: ${data.printDate}
-              </div>
-            </div>
-          </div>
-        `;
-        
-        hideLoading();
-      } catch (error) {
-        showAlert('❌ ข้อผิดพลาด', error.message);
-        hideLoading();
-      }
+    body.innerHTML = data.map(r=>`
+      <tr class="border-b border-slate-200">
+        <td class="py-2 pr-2">${r.inventoryId}</td>
+        <td class="py-2 pr-2">${r.matUnitId}</td>
+        <td class="py-2 pr-2">${r.matUnit}</td>
+        <td class="py-2 pr-2 text-right">${r.target}</td>
+        <td class="py-2 pr-2 text-right">${r.scanned}</td>
+        <td class="py-2 pr-2 text-right">${r.remaining}</td>
+        <td class="py-2 pr-2">${r.exceeded ? '<span class="text-red-600 font-semibold">เกินจำนวน</span>' : (r.complete ? '<span style="color:var(--c-secondary)" class="font-semibold">ครบแล้ว</span>' : 'กำลังรับเข้า')}</td>
+      </tr>`).join('');
+  }catch(err){
+    toast(err.message, 'error');
+  }finally{
+    showLoading(false);
+  }
+}
+document.getElementById('btnRefreshReport').addEventListener('click', loadReport);
+
+// ---------- HISTORY ----------
+async function loadHistory(){
+  showLoading(true);
+  try{
+    const data = await apiGet('history');
+    const body = document.getElementById('historyBody');
+    if (data.length === 0){
+      body.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">ยังไม่มีข้อมูล</td></tr>';
+      return;
     }
-    
-    async function callGAS(action, params = {}) {
-      return new Promise((resolve, reject) => {
-        const payload = { action, ...params };
-        
-        fetch(APP.gasUrl, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.error) {
-            reject(new Error(data.error));
-          } else {
-            resolve(data);
-          }
-        })
-        .catch(error => reject(error));
-      });
-    }
-    
-    function showAlert(title, message) {
-      const container = document.getElementById('alertContainer');
-      const type = title.includes('❌') ? 'error' : title.includes('✓') ? 'success' : title.includes('⚠️') ? 'warning' : 'info';
-      
-      const alert = document.createElement('div');
-      alert.className = `alert alert-${type}`;
-      alert.innerHTML = `<strong>${title}</strong><br>${message}`;
-      
-      container.appendChild(alert);
-      setTimeout(() => alert.remove(), 5000);
-    }
-    
-    function showSuccess(title, message) {
-      showAlert(title, message);
-    }
-    
-    function showWarning(title, message) {
-      showAlert(title, message);
-    }
-    
-    function showLoading(text = 'กำลังโหลด...') {
-      document.getElementById('loadingText').textContent = text;
-      document.getElementById('loadingModal').classList.add('active');
-    }
-    
-    function hideLoading() {
-      document.getElementById('loadingModal').classList.remove('active');
-    }
-    
-    function showConfirm(title, message, callback) {
-      APP.confirmCallback = callback;
-      document.getElementById('confirmTitle').textContent = title;
-      document.getElementById('confirmMessage').textContent = message;
-      document.getElementById('confirmModal').classList.add('active');
-    }
-    
-    function confirmAction() {
-      closeModal('confirmModal');
-      if (APP.confirmCallback) APP.confirmCallback();
-    }
-    
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
-    }
-  </script>
+    body.innerHTML = data.map(r=>`
+      <tr class="border-b border-slate-200">
+        <td class="py-2 pr-2 whitespace-nowrap">${r['วันที่/เวลา']}</td>
+        <td class="py-2 pr-2">${r['Inventory ID']}</td>
+        <td class="py-2 pr-2">${r['MATUnitID']}</td>
+        <td class="py-2 pr-2 text-right">${r['ลำดับที่สแกน']}/${r['จำนวนเป้าหมาย']}</td>
+        <td class="py-2 pr-2">${r['สถานะ'] === 'เกินจำนวน!' ? '<span class="text-red-600 font-semibold">เกินจำนวน</span>' : 'ปกติ'}</td>
+        <td class="py-2 pr-2">${r['ผู้บันทึก']}</td>
+      </tr>`).join('');
+  }catch(err){
+    toast(err.message, 'error');
+  }finally{
+    showLoading(false);
+  }
+}
+document.getElementById('btnRefreshHistory').addEventListener('click', loadHistory);
+
+// ---------- PRINT ----------
+function loadPrintDropdown(){
+  // ใช้รายการเดียวกับ inventorySelect (โหลดไปแล้วตอน init)
+}
+
+document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
+  const id = document.getElementById('printInventorySelect').value;
+  if (!id) return toast('กรุณาเลือก Inventory ID', 'warn');
+  showLoading(true);
+  try{
+    const data = await apiGet('printData', { inventoryId: id });
+    document.getElementById('pInventoryId').textContent = data.info.inventoryId;
+    document.getElementById('pShipmentId').textContent = data.info.shipmentId;
+    document.getElementById('pDelivery').textContent = data.info.delivery;
+    document.getElementById('pContainer').textContent = (data.info.containerType || '') + ' ' + (data.info.containerSize || '');
+    document.getElementById('pDate').textContent = data.info.date || '';
+    document.getElementById('pPrintedAt').textContent = 'พิมพ์เมื่อ ' + data.printedAt;
+    document.getElementById('pUnitsBody').innerHTML = data.units.map(u=>
+      `<tr><td>${u.matUnitId}</td><td>${u.matUnit}</td><td class="text-right">${u.scanned}/${u.quantity}</td></tr>`
+    ).join('');
+
+    document.getElementById('qrcodeBox').innerHTML = '';
+    new QRCode(document.getElementById('qrcodeBox'), { text: data.info.inventoryId, width: 110, height: 110 });
+  }catch(err){
+    toast(err.message, 'error');
+  }finally{
+    showLoading(false);
+  }
+});
+
+document.getElementById('btnDoPrint').addEventListener('click', ()=> window.print());
+
+// ---------- START ----------
+init();
+</script>
 </body>
 </html>
