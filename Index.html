@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Packing App v2.2 - ระบบรับเข้าสต็อก</title>
-  
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <style>
@@ -321,89 +319,6 @@
       100% { transform: rotate(360deg); }
     }
     
-    .loading {
-      text-align: center;
-      padding: 20px;
-    }
-    
-    @media print {
-      body {
-        background: white;
-        color: black;
-      }
-      .navbar, .tabs, .tab-controls, .btn {
-        display: none !important;
-      }
-      .print-section {
-        page-break-inside: avoid;
-      }
-    }
-    
-    .label-template {
-      width: 10cm;
-      height: 15cm;
-      border: 2px solid #000;
-      padding: 10px;
-      margin: 10px;
-      background: white;
-      color: black;
-      display: inline-block;
-      font-family: Arial, sans-serif;
-      font-size: 11px;
-      page-break-inside: avoid;
-    }
-    
-    .label-template .label-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    
-    .label-template .qr-code {
-      text-align: center;
-      margin: 10px 0;
-      font-size: 9px;
-      color: #666;
-    }
-    
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 12px 15px;
-      }
-      
-      .navbar h1 {
-        font-size: 1.3rem;
-      }
-      
-      .tab-btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        margin: 0 3px;
-      }
-      
-      .glass-solid {
-        margin: 10px;
-      }
-      
-      .btn {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-      
-      table {
-        font-size: 0.85rem;
-      }
-      
-      th, td {
-        padding: 8px;
-      }
-      
-      input, select {
-        font-size: 16px;
-      }
-    }
-    
     .unit-item {
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -441,13 +356,51 @@
       height: 100%;
       transition: width 0.3s ease;
     }
+    
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 15px; }
+      .navbar h1 { font-size: 1.3rem; }
+      .tab-btn { padding: 8px 12px; font-size: 0.85rem; margin: 0 3px; }
+      .glass-solid { margin: 10px; }
+      .btn { width: 100%; margin-bottom: 10px; }
+      table { font-size: 0.85rem; }
+      th, td { padding: 8px; }
+      input, select { font-size: 16px; }
+    }
+    
+    .label-template {
+      width: 10cm;
+      height: 15cm;
+      border: 2px solid #000;
+      padding: 10px;
+      margin: 10px;
+      background: white;
+      color: black;
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      page-break-inside: avoid;
+    }
+    
+    .label-template .label-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    
+    @media print {
+      body { background: white; color: black; }
+      .navbar, .tabs, .tab-controls, .btn { display: none !important; }
+      .print-section { page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
   <div class="navbar">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <h1 class="text-2xl">📦 Packing App v2.2</h1>
-      <div class="text-white text-sm">ระบบรับเข้าสต็อก</div>
+      <div class="text-white text-sm">ระบบรับเข้าสต็อก (Vercel + GAS)</div>
     </div>
   </div>
   
@@ -493,10 +446,6 @@
         </div>
         
         <div id="unitsDisplay" class="mb-6"></div>
-        
-        <div class="text-sm text-gray-600 text-center mt-4">
-          💡 เปิดกล้องและชี้ไปที่ Barcode/QR Code เพื่อสแกน
-        </div>
       </div>
     </div>
     
@@ -647,7 +596,7 @@
 
   <script>
     const APP = {
-      scriptUrl: 'https://script.google.com/macros/s/AKfycbxHEB6uiDgzGPA4ha47iuj0US-abP3jnxgoJtee_F6Q8sAmWJfT3tK67KC1ibryJsr6/exec', // Will be set to GAS deployment URL
+      gasUrl: 'https://script.google.com/macros/s/AKfycbwzHV8pGj2jH52WAoOSAgJBl65DiBHRPJXrcndwN2p3i9PoSmJwgruXTth3JR6Rxb_-/exec', // ⬅️ UPDATE THIS
       currentTab: 'scan',
       currentInventory: null,
       currentUnits: [],
@@ -656,6 +605,11 @@
     };
     
     document.addEventListener('DOMContentLoaded', async () => {
+      // Check if GAS URL is set
+      if (APP.gasUrl.includes('YOUR_SCRIPT_ID')) {
+        showAlert('⚠️ ข้อผิดพลาด', 'กรุณาตั้งค่า GAS deployment URL ใน index.html');
+        return;
+      }
       await loadInventoryList();
       await startCamera();
       loadHistory();
@@ -748,7 +702,10 @@
       showLoading('กำลังตรวจสอบ Barcode...');
       
       try {
-        const response = await callGAS('verifyBarcode', [barcode, APP.currentInventory.id]);
+        const response = await callGAS('verifyBarcode', {
+          barcode,
+          inventoryId: APP.currentInventory.id
+        });
         
         if (response.valid) {
           const unit = APP.currentUnits.find(u => u.matUnitId === response.matUnitId);
@@ -778,7 +735,7 @@
     async function loadInventoryList() {
       try {
         showLoading('กำลังโหลดรายการ Inventory...');
-        const data = await callGAS('getInventoryList', []);
+        const data = await callGAS('getInventoryList');
         
         const select = document.getElementById('inventorySelect');
         select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
@@ -816,7 +773,9 @@
     async function loadUnits() {
       try {
         showLoading('กำลังโหลดรายการหน่วย...');
-        const units = await callGAS('getUnitsByInventoryId', [APP.currentInventory.id]);
+        const units = await callGAS('getUnitsByInventoryId', {
+          inventoryId: APP.currentInventory.id
+        });
         
         APP.currentUnits = units;
         updateUnitsDisplay();
@@ -923,12 +882,12 @@
         showLoading('กำลังบันทึกข้อมูล...');
         
         try {
-          const result = await callGAS('recordStockIn', [
-            APP.currentInventory.id,
-            APP.currentInventory.shipmentId,
-            APP.currentInventory.delivery,
-            APP.currentUnits
-          ]);
+          const result = await callGAS('recordStockIn', {
+            inventoryId: APP.currentInventory.id,
+            shipmentId: APP.currentInventory.shipmentId,
+            delivery: APP.currentInventory.delivery,
+            scannedUnits: APP.currentUnits
+          });
           
           if (result.success) {
             showSuccess('✓ บันทึกสำเร็จ', `Sheet: ${result.sheetName}`);
@@ -957,7 +916,7 @@
       showLoading('กำลังโหลดรายงาน...');
       
       try {
-        const data = await callGAS('getStockSummary', []);
+        const data = await callGAS('getStockSummary');
         const tbody = document.getElementById('reportTableBody');
         
         if (!data || data.length === 0) {
@@ -987,7 +946,9 @@
     async function loadHistory() {
       try {
         const searchId = document.getElementById('historySearchId').value.trim();
-        const data = await callGAS('getHistory', [searchId || null]);
+        const data = await callGAS('getHistory', {
+          inventoryId: searchId || null
+        });
         const tbody = document.getElementById('historyTableBody');
         
         if (!data || data.length === 0) {
@@ -1010,7 +971,7 @@
     
     async function loadPrintInventoryList() {
       try {
-        const data = await callGAS('getInventoryList', []);
+        const data = await callGAS('getInventoryList');
         const select = document.getElementById('printInventorySelect');
         select.innerHTML = '<option value="">-- เลือก Inventory ID --</option>';
         
@@ -1036,7 +997,9 @@
       showLoading('กำลังโหลดข้อมูลพิมพ์...');
       
       try {
-        const data = await callGAS('getPrintData', [inventoryId]);
+        const data = await callGAS('getPrintData', {
+          inventoryId: inventoryId
+        });
         
         if (!data) {
           showAlert('❌ ข้อผิดพลาด', 'ไม่พบข้อมูลสำหรับพิมพ์');
@@ -1069,11 +1032,10 @@
                 <span>Ship Date</span>
                 <span>${data.shipDate}</span>
               </div>
-              <div class="qr-code">
-                📱 QR/Barcode<br>
-                ${data.barCode}
+              <div style="text-align: center; margin-top: 10px; font-size: 9px;">
+                📱 ${data.barCode}
               </div>
-              <div style="text-align: center; font-size: 9px; margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
+              <div style="text-align: center; font-size: 8px; margin-top: 10px; border-top: 1px solid #000; padding-top: 5px;">
                 Printed: ${data.printDate}
               </div>
             </div>
@@ -1087,12 +1049,23 @@
       }
     }
     
-    async function callGAS(functionName, params) {
+    async function callGAS(action, params = {}) {
       return new Promise((resolve, reject) => {
-        google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)
-          [functionName](...params);
+        const payload = { action, ...params };
+        
+        fetch(APP.gasUrl, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            reject(new Error(data.error));
+          } else {
+            resolve(data);
+          }
+        })
+        .catch(error => reject(error));
       });
     }
     
