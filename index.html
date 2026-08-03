@@ -261,7 +261,7 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxhLUITnQOHVUyPxrkTZYYaAdcLtxvuQhdDFJjVqHu2WZtO54-DR0TqQgfiQ9krj0ca/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwCK-E1WhHKgoBLZagYNRBZ47WqeWocsysc65661-4PBJZnCJSyOIS-0q2ehsc8BaMX/exec';
 /* ================================================= */
 
 let state = {
@@ -335,6 +335,8 @@ async function init(){
   }finally{
     showLoading(false);
   }
+  // อุ่นแคช IS + ประวัติ ในพื้นหลัง ไม่รอผล ไม่บล็อกหน้าจอ (ทำให้ตอนเลือก Inventory ID ถัดไปเร็วขึ้น)
+  apiGet('warmCache').catch(()=>{});
 }
 
 let knownInventoryIds = [];
