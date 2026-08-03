@@ -189,13 +189,15 @@
     <div class="glass rounded-2xl p-4 space-y-3 no-print">
       <h2 class="font-semibold" style="color:var(--c-secondary)">🖨️ พิมพ์ใบสินค้า (Multiple Print)</h2>
       <div class="flex items-center justify-between">
-        <label class="text-xs text-slate-500">เลือก Inventory ID ได้หลายรายการ (ทุกกล่องของทุก Inventory ID ที่เลือกจะรวมพิมพ์เป็นชุดเดียว)</label>
+        <label class="text-xs text-slate-500">รายการด้านล่างแสดงเฉพาะ Inventory ID ที่มีการบันทึกรับเข้าแล้วเท่านั้น — เลือกได้หลายรายการ (ทุกกล่องของทุก Inventory ID ที่เลือกจะรวมพิมพ์เป็นชุดเดียว)</label>
         <div class="flex gap-2 text-xs">
           <button id="btnSelectAllInv" class="glass-strong rounded-lg px-2 py-1">เลือกทั้งหมด</button>
           <button id="btnClearAllInv" class="glass-strong rounded-lg px-2 py-1">ล้างที่เลือก</button>
         </div>
       </div>
-      <div id="printInventoryChecklist" class="glass-strong rounded-xl p-2 max-h-48 overflow-y-auto space-y-1 text-sm"></div>
+      <div id="printInventoryChecklist" class="glass-strong rounded-xl p-2 max-h-48 overflow-y-auto space-y-1 text-sm">
+        <p class="text-xs text-slate-400 px-2 py-1">กำลังโหลด...</p>
+      </div>
       <div class="flex gap-2">
         <button id="btnLoadPrint" class="btn-primary rounded-xl px-4 py-2 text-sm flex-1">โหลดข้อมูล</button>
         <button id="btnDoPrint" class="btn-primary rounded-xl px-4 py-2 text-sm flex-1">🖨️ พิมพ์ทั้งหมด</button>
@@ -263,7 +265,7 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxWEp6VZUhQ_62P118GAxIM27BjC_5asAS2ztTS0gs1xI9kd-oBn3Xks12Z1o75wkBk/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwUrsmFz_QTiRYjAJc1BPsizvwoJ4VulFvbYmHJ8KezUuQ75xWSj9s-tGKZnKXQWUxY/exec';
 /* ================================================= */
 
 let state = {
@@ -325,6 +327,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
     document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
     if (btn.dataset.tab === 'history') loadHistory();
+    if (btn.dataset.tab === 'print') loadPrintChecklist();
   });
 });
 
@@ -348,13 +351,27 @@ function fillInventorySelect(list){
   const sel = document.getElementById('inventorySelect');
   sel.innerHTML = '<option value="">-- เลือก Inventory ID --</option>' +
     list.map(id => `<option value="${id}">${id}</option>`).join('');
+}
 
+// หน้าพิมพ์: โหลดเฉพาะ Inventory ID ที่ "มีการบันทึกรับเข้าจริงแล้ว" เท่านั้น (ไม่เอาทุก Inventory ID จากชีท MS)
+async function loadPrintChecklist(){
   const checklist = document.getElementById('printInventoryChecklist');
-  checklist.innerHTML = list.map(id => `
-    <label class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/50 cursor-pointer">
-      <input type="checkbox" value="${id}" class="print-inv-checkbox w-4 h-4 accent-green-700">
-      <span>${id}</span>
-    </label>`).join('');
+  checklist.innerHTML = '<p class="text-xs text-slate-400 px-2 py-1">กำลังโหลด...</p>';
+  try{
+    const list = await apiGet('recordedInventoryList');
+    if (list.length === 0){
+      checklist.innerHTML = '<p class="text-xs text-slate-400 px-2 py-1">ยังไม่มี Inventory ID ใดถูกบันทึกรับเข้าเลย</p>';
+      return;
+    }
+    checklist.innerHTML = list.map(id => `
+      <label class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/50 cursor-pointer">
+        <input type="checkbox" value="${id}" class="print-inv-checkbox w-4 h-4 accent-green-700">
+        <span>${id}</span>
+      </label>`).join('');
+  }catch(err){
+    checklist.innerHTML = '<p class="text-xs text-red-500 px-2 py-1">โหลดรายการไม่สำเร็จ</p>';
+    toast(err.message, 'error');
+  }
 }
 
 document.getElementById('btnSelectAllInv').addEventListener('click', ()=>{
