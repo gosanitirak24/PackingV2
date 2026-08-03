@@ -107,11 +107,12 @@
   <section id="tab-scan" class="tab-panel space-y-4">
 
     <div class="glass rounded-2xl p-4 space-y-3">
-      <h2 class="font-semibold" style="color:var(--c-secondary)">1. เลือก Inventory ID และลำดับกล่อง</h2>
+      <h2 class="font-semibold" style="color:var(--c-secondary)">1. เลือก Inventory ID</h2>
       <div class="flex gap-2">
-        <select id="inventorySelect" class="flex-1 rounded-xl border-0 glass-strong px-3 py-2 focus:ring-2 focus:ring-green-600">
-          <option value="">-- เลือก Inventory ID --</option>
-        </select>
+        <input id="inventorySelect" list="inventoryDatalist" type="text" autocomplete="off"
+               placeholder="พิมพ์เพื่อค้นหา Inventory ID..."
+               class="flex-1 rounded-xl border-0 glass-strong px-3 py-2 focus:ring-2 focus:ring-green-600">
+        <datalist id="inventoryDatalist"></datalist>
         <button id="btnScanInventory" class="btn-primary rounded-xl px-4 py-2 text-sm">📷 สแกน</button>
       </div>
       <div id="shipmentInfoBox" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-2">
@@ -124,14 +125,9 @@
           <p class="font-semibold" id="infoDelivery">-</p>
         </div>
       </div>
-      <div id="boxSeqBox" class="hidden pt-1">
-        <label class="text-xs text-slate-500 block mb-1">ลำดับกล่อง (ตัวเลข) *</label>
-        <div class="flex gap-2 items-center">
-          <input id="boxSeqInput" type="number" min="1" step="1" placeholder="เช่น 1, 2, 3..."
-                 class="flex-1 rounded-xl border-0 glass-strong px-3 py-2 focus:ring-2 focus:ring-green-600">
-          <span class="text-xs text-slate-500 whitespace-nowrap">Running No:</span>
-          <span id="runningNoDisplay" class="font-mono font-semibold text-sm glass-strong rounded-xl px-3 py-2">-</span>
-        </div>
+      <div id="boxSeqBox" class="hidden pt-1 flex items-center gap-2 text-xs text-slate-500">
+        <span>ลำดับกล่องล่าสุดที่บันทึก (ระบบนับให้อัตโนมัติทุกครั้งที่กดบันทึก):</span>
+        <span id="runningNoDisplay" class="font-mono font-semibold text-sm glass-strong rounded-xl px-3 py-1">ยังไม่มีการบันทึก</span>
       </div>
     </div>
 
@@ -265,13 +261,12 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwUrsmFz_QTiRYjAJc1BPsizvwoJ4VulFvbYmHJ8KezUuQ75xWSj9s-tGKZnKXQWUxY/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxhLUITnQOHVUyPxrkTZYYaAdcLtxvuQhdDFJjVqHu2WZtO54-DR0TqQgfiQ9krj0ca/exec';
 /* ================================================= */
 
 let state = {
   inventoryId: null,
   shipmentInfo: null,
-  boxSeq: null,
   units: [],
   selectedUnitId: null,
   html5Qr: null,
@@ -289,11 +284,6 @@ function toast(msg, type){
   el.textContent = msg;
   document.getElementById('toastBox').appendChild(el);
   setTimeout(()=> el.remove(), 3500);
-}
-
-function runningNoFor(inventoryId, boxSeq){
-  if (!inventoryId || !boxSeq) return '-';
-  return inventoryId + '-' + String(boxSeq).padStart(3, '0');
 }
 
 async function apiGet(action, params){
@@ -347,10 +337,12 @@ async function init(){
   }
 }
 
+let knownInventoryIds = [];
+
 function fillInventorySelect(list){
-  const sel = document.getElementById('inventorySelect');
-  sel.innerHTML = '<option value="">-- เลือก Inventory ID --</option>' +
-    list.map(id => `<option value="${id}">${id}</option>`).join('');
+  knownInventoryIds = list;
+  const dl = document.getElementById('inventoryDatalist');
+  dl.innerHTML = list.map(id => `<option value="${id}"></option>`).join('');
 }
 
 // หน้าพิมพ์: โหลดเฉพาะ Inventory ID ที่ "มีการบันทึกรับเข้าจริงแล้ว" เท่านั้น (ไม่เอาทุก Inventory ID จากชีท MS)
@@ -381,16 +373,13 @@ document.getElementById('btnClearAllInv').addEventListener('click', ()=>{
   document.querySelectorAll('.print-inv-checkbox').forEach(cb => cb.checked = false);
 });
 
-// ---------- STEP 1: SELECT INVENTORY ----------
-document.getElementById('inventorySelect').addEventListener('change', async (e)=>{
-  const id = e.target.value;
-  if (!id) return;
+// ---------- STEP 1: SELECT INVENTORY (พิมพ์ค้นหาได้ ผ่าน <input list>) ----------
+let lastLoadedInventoryId = null;
+document.getElementById('inventorySelect').addEventListener('input', async (e)=>{
+  const id = e.target.value.trim();
+  if (!id || !knownInventoryIds.includes(id) || id === lastLoadedInventoryId) return;
+  lastLoadedInventoryId = id;
   await loadInventory(id);
-});
-
-document.getElementById('boxSeqInput').addEventListener('input', (e)=>{
-  state.boxSeq = e.target.value.trim();
-  document.getElementById('runningNoDisplay').textContent = runningNoFor(state.inventoryId, state.boxSeq);
 });
 
 async function loadInventory(id){
@@ -403,7 +392,7 @@ async function loadInventory(id){
     document.getElementById('infoDelivery').textContent = detail.info.delivery || '-';
     document.getElementById('shipmentInfoBox').classList.remove('hidden');
     document.getElementById('boxSeqBox').classList.remove('hidden');
-    document.getElementById('runningNoDisplay').textContent = runningNoFor(id, state.boxSeq);
+    document.getElementById('runningNoDisplay').textContent = 'ยังไม่มีการบันทึก';
 
     state.units = detail.units;
     renderUnits();
@@ -421,8 +410,14 @@ function renderUnits(){
     box.innerHTML = '<p class="text-sm text-slate-500">ไม่พบรายการสินค้าของ Inventory ID นี้ในชีท IS</p>';
     return;
   }
-  box.innerHTML = state.units.map(u=>{
-    const cls = u.exceeded ? 'exceeded' : (u.remaining <= 0 ? 'complete' : '');
+  // แสดงเฉพาะรายการที่ยังไม่บันทึกครบ (ซ่อนรายการที่ครบจำนวนแล้วออกจากตัวเลือก)
+  const pending = state.units.filter(u => u.remaining > 0 || u.exceeded);
+  if (pending.length === 0){
+    box.innerHTML = '<p class="text-sm text-slate-500">รับเข้าครบทุกรายการของ Inventory ID นี้แล้ว</p>';
+    return;
+  }
+  box.innerHTML = pending.map(u=>{
+    const cls = u.exceeded ? 'exceeded' : '';
     const selected = state.selectedUnitId === u.matUnitId ? 'selected' : '';
     return `
     <label class="radio-card ${cls} ${selected} flex items-center justify-between glass-strong rounded-xl p-3 border-2 border-transparent" data-unit="${u.matUnitId}">
@@ -435,7 +430,7 @@ function renderUnits(){
       </div>
       <div class="text-right">
         <p class="text-sm font-bold" style="color:var(--c-secondary)">${u.scanned}/${u.quantity}</p>
-        <p class="text-xs ${u.exceeded ? 'text-red-600 font-semibold' : 'text-slate-500'}">${u.exceeded ? 'เกินจำนวน!' : (u.remaining<=0 ? 'ครบแล้ว' : 'คงเหลือ ' + u.remaining)}</p>
+        <p class="text-xs ${u.exceeded ? 'text-red-600 font-semibold' : 'text-slate-500'}">${u.exceeded ? 'เกินจำนวน!' : 'คงเหลือ ' + u.remaining}</p>
       </div>
     </label>`;
   }).join('');
@@ -451,7 +446,6 @@ function renderUnits(){
 // ---------- VALIDATION BEFORE SCAN/SAVE ----------
 function validateBeforeSubmit(){
   if (!state.inventoryId) { toast('กรุณาเลือก Inventory ID ก่อน', 'warn'); return false; }
-  if (!state.boxSeq) { toast('กรุณาระบุลำดับกล่องก่อน', 'warn'); document.getElementById('boxSeqInput').focus(); return false; }
   return true;
 }
 
@@ -515,6 +509,7 @@ async function onScanSuccess(decodedText){
 
   if (quickScanMode === 'inventory'){
     document.getElementById('inventorySelect').value = decodedText;
+    lastLoadedInventoryId = decodedText;
     await loadInventory(decodedText);
     toast('เลือก Inventory ID: ' + decodedText);
     quickScanMode = null;
@@ -553,7 +548,6 @@ async function submitScan(unit, confirmedExceed){
       inventoryId: state.inventoryId,
       shipmentId: state.shipmentInfo.shipmentId,
       delivery: state.shipmentInfo.delivery,
-      boxSeq: state.boxSeq,
       matUnitId: unit.matUnitId,
       matUnit: unit.matUnit,
       targetQty: unit.quantity,
@@ -577,6 +571,7 @@ async function submitScan(unit, confirmedExceed){
       state.units[idx].exceeded = result.exceeded;
     }
     renderUnits();
+    document.getElementById('runningNoDisplay').textContent = `${result.runningNo} (กล่องที่ ${result.boxSeq})`;
 
     if (result.exceeded){
       toast(`⚠️ บันทึกแล้ว (เกินจำนวน) ${unit.matUnitId} (${result.scanned}/${unit.target})`, 'error');
@@ -650,10 +645,20 @@ document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
 
   showLoading(true);
   try{
-    // ยิงขอข้อมูลทุก Inventory ID ที่เลือกพร้อมกัน
-    const results = await Promise.all(ids.map(id =>
-      apiGet('printBatch', { inventoryId: id }).catch(err => ({ error: err.message, inventoryId: id }))
-    ));
+    // ยิงขอข้อมูลทีละ Inventory ID ตามลำดับ (พร้อม retry 1 ครั้งถ้าพลาด) แทนการยิงพร้อมกันทั้งหมด
+    // เพื่อกันปัญหาบางรายการหายไปเวลาเลือกหลายรายการพร้อมกัน
+    const results = [];
+    for (const id of ids){
+      let data = null;
+      for (let attempt = 0; attempt < 2 && !data; attempt++){
+        try{
+          data = await apiGet('printBatch', { inventoryId: id });
+        }catch(err){
+          if (attempt === 1) data = { error: err.message, inventoryId: id };
+        }
+      }
+      results.push(data);
+    }
 
     const wrap = document.getElementById('printAreaWrap');
     wrap.innerHTML = '';
@@ -670,7 +675,7 @@ document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
         root.querySelector('[data-f="msCode"]').textContent = `MS(${shortMsCode(data.info.shipmentId)})`;
         root.querySelector('[data-f="delivery"]').textContent = data.info.delivery || '-';
         root.querySelector('[data-f="bw"]').textContent = data.info.stxAmount || '-';
-        root.querySelector('[data-f="date"]').textContent = data.info.date || data.printedAt;
+        root.querySelector('[data-f="date"]').textContent = data.info.date || (data.printedAt || '').split(' ')[0];
         root.querySelector('[data-f="inventoryId"]').textContent = data.info.inventoryId;
         root.querySelector('[data-f="delivery2"]').textContent = data.info.delivery || '-';
         root.querySelector('[data-f="customerRef"]').textContent = data.info.customerRef || '-';
@@ -691,7 +696,10 @@ document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
       wrap.innerHTML = '<p class="text-sm text-slate-500 text-center">ยังไม่มีการรับเข้ากล่องใดของ Inventory ID ที่เลือก</p>';
     }
     let summary = `พร้อมพิมพ์ทั้งหมด ${totalLabels} ใบ จาก ${ids.length - failed.length} Inventory ID`;
-    if (failed.length) summary += ` (โหลดไม่สำเร็จ: ${failed.join(', ')})`;
+    if (failed.length){
+      summary += ` (โหลดไม่สำเร็จ: ${failed.join(', ')})`;
+      toast(`โหลดข้อมูลไม่สำเร็จ ${failed.length} รายการ: ${failed.join(', ')}`, 'error');
+    }
     document.getElementById('printSummaryText').textContent = summary;
   }catch(err){
     toast(err.message, 'error');
