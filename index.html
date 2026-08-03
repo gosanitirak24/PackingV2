@@ -67,9 +67,15 @@
   @media print{
     body *{ visibility:hidden; }
     #printAreaWrap, #printAreaWrap *{ visibility:visible; }
-    #printAreaWrap{ position:absolute; top:0; left:0; width:100%; }
-    .print-label{ page-break-after: always; box-shadow:none !important; backdrop-filter:none !important; background:#fff !important; }
-    .print-label:last-child{ page-break-after: auto; }
+    #printAreaWrap{
+      position:absolute; top:0; left:0; width:100%;
+      display:flex; flex-wrap:wrap; gap:0;
+    }
+    .print-label{
+      page-break-inside: avoid; /* กันไม่ให้ใบเดียวถูกตัดข้ามหน้า แต่ปล่อยให้หลายใบต่อกันในหน้าเดียวได้ตามพื้นที่/สเกลที่ตั้งไว้ตอนสั่งพิมพ์ */
+      box-shadow:none !important; backdrop-filter:none !important; background:#fff !important;
+      border:1px dashed #999;
+    }
     .no-print{ display:none !important; }
   }
 </style>
@@ -90,7 +96,6 @@
   </div>
   <div class="max-w-6xl mx-auto px-2 pb-2 flex gap-1 overflow-x-auto">
     <button class="tab-btn active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="scan">📷 รับเข้าสต็อก</button>
-    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="report">📊 สต็อกคงเหลือ</button>
     <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="history">🕒 ประวัติเคลื่อนไหว</button>
     <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="print">🖨️ พิมพ์ใบสินค้า</button>
   </div>
@@ -151,32 +156,6 @@
       </div>
     </div>
 
-  </section>
-
-  <!-- ============ TAB: REPORT ============ -->
-  <section id="tab-report" class="tab-panel hidden space-y-4">
-    <div class="glass rounded-2xl p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold" style="color:var(--c-secondary)">📊 รายงานสต็อกคงเหลือ</h2>
-        <button id="btnRefreshReport" class="btn-primary rounded-xl px-3 py-1.5 text-sm">🔄 รีเฟรช</button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-slate-500 border-b border-slate-300">
-              <th class="py-2 pr-2">Inventory ID</th>
-              <th class="py-2 pr-2">MATUnitID</th>
-              <th class="py-2 pr-2">MATUnit</th>
-              <th class="py-2 pr-2 text-right">เป้าหมาย</th>
-              <th class="py-2 pr-2 text-right">สแกนแล้ว</th>
-              <th class="py-2 pr-2 text-right">คงเหลือ</th>
-              <th class="py-2 pr-2">สถานะ</th>
-            </tr>
-          </thead>
-          <tbody id="reportBody"></tbody>
-        </table>
-      </div>
-    </div>
   </section>
 
   <!-- ============ TAB: HISTORY ============ -->
@@ -284,7 +263,7 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxpJPfVCIuYfglsDVXn7iXQOOGHNLvJ0Z5N4GWR34U1IGLhwBn3hJ4mDoL0Ec-5PSOZ/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxWEp6VZUhQ_62P118GAxIM27BjC_5asAS2ztTS0gs1xI9kd-oBn3Xks12Z1o75wkBk/exec';
 /* ================================================= */
 
 let state = {
@@ -345,7 +324,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.classList.add('active');
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
     document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-    if (btn.dataset.tab === 'report') loadReport();
     if (btn.dataset.tab === 'history') loadHistory();
   });
 });
@@ -611,34 +589,6 @@ document.getElementById('unitsList').addEventListener('dblclick', (e)=>{
   const unit = state.units.find(u => u.matUnitId === card.dataset.unit);
   if (unit) submitScan(unit, false);
 });
-
-// ---------- REPORT ----------
-async function loadReport(){
-  showLoading(true);
-  try{
-    const data = await apiGet('summary');
-    const body = document.getElementById('reportBody');
-    if (data.length === 0){
-      body.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400">ยังไม่มีข้อมูล</td></tr>';
-      return;
-    }
-    body.innerHTML = data.map(r=>`
-      <tr class="border-b border-slate-200">
-        <td class="py-2 pr-2">${r.inventoryId}</td>
-        <td class="py-2 pr-2">${r.matUnitId}</td>
-        <td class="py-2 pr-2">${r.matUnit}</td>
-        <td class="py-2 pr-2 text-right">${r.target}</td>
-        <td class="py-2 pr-2 text-right">${r.scanned}</td>
-        <td class="py-2 pr-2 text-right">${r.remaining}</td>
-        <td class="py-2 pr-2">${r.exceeded ? '<span class="text-red-600 font-semibold">เกินจำนวน</span>' : (r.complete ? '<span style="color:var(--c-secondary)" class="font-semibold">ครบแล้ว</span>' : 'กำลังรับเข้า')}</td>
-      </tr>`).join('');
-  }catch(err){
-    toast(err.message, 'error');
-  }finally{
-    showLoading(false);
-  }
-}
-document.getElementById('btnRefreshReport').addEventListener('click', loadReport);
 
 // ---------- HISTORY ----------
 async function loadHistory(){
