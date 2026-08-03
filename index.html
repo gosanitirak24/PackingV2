@@ -241,7 +241,7 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwUfjQ78ITHG44y_Y-BAzdQQQG-VXIH30SiiElDeHp-wtN8Gq8Z-XX-PDgb2dO8Z1w9/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw0YigM7NYL2JlqakC_7GPjxEhqYRgVv3D4DtnH4NcN1NLYwIwXH_4O6b5c0wFFi5Yl/exec';
 /* ================================================= */
 
 let state = {
@@ -336,14 +336,14 @@ async function loadInventory(id){
   showLoading(true);
   try{
     state.inventoryId = id;
-    const info = await apiGet('shipmentInfo', { inventoryId: id });
-    state.shipmentInfo = info;
-    document.getElementById('infoShipmentId').textContent = info.shipmentId || '-';
-    document.getElementById('infoDelivery').textContent = info.delivery || '-';
+    // เรียก API ครั้งเดียว (info + units มาพร้อมกัน) แทนการยิง 2 รอบ - ลดเวลาโหลดประมาณครึ่งหนึ่ง
+    const detail = await apiGet('inventoryDetail', { inventoryId: id });
+    state.shipmentInfo = detail.info;
+    document.getElementById('infoShipmentId').textContent = detail.info.shipmentId || '-';
+    document.getElementById('infoDelivery').textContent = detail.info.delivery || '-';
     document.getElementById('shipmentInfoBox').classList.remove('hidden');
 
-    const units = await apiGet('units', { inventoryId: id });
-    state.units = units;
+    state.units = detail.units;
     renderUnits();
     document.getElementById('unitsSection').classList.remove('hidden');
   }catch(err){
