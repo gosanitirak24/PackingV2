@@ -4,66 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Packing - ระบบรับเข้าสต็อก</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root{
-    --c-primary:#B8EA85;
-    --c-secondary:#3E870D;
-    --c-bg:#E0E3E5;
+    --c-primary:#EAEAF6;
+    --c-secondary:#191A1A;
+    --c-bg:#A6C2DD;
   }
+  html{ scroll-behavior:smooth; }
   body{
-    background: linear-gradient(135deg, var(--c-bg) 0%, #cfd6da 100%);
-    min-height:100vh;
+    background: var(--c-bg);
     font-family: 'Segoe UI', 'Sarabun', sans-serif;
+    color: var(--c-secondary);
+    padding-top: 62px;
   }
-  .glass{
-    background: rgba(255,255,255,0.45);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.55);
-    box-shadow: 0 8px 32px rgba(62,135,13,0.15);
+  /* ---- Flat design: สีทึบ ไม่มีเงา ไม่มี gradient ---- */
+  .navbar-flat{
+    background: var(--c-secondary);
+    border-bottom: 3px solid var(--c-primary);
   }
-  .glass-strong{
-    background: rgba(255,255,255,0.65);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.7);
+  .navbar-flat .navbar-brand, .navbar-flat .nav-link{
+    color: var(--c-primary) !important;
   }
-  .btn-primary{
-    background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
-    color:white; font-weight:600;
-    box-shadow: 0 4px 14px rgba(62,135,13,0.35);
-    transition: all .15s ease;
+  .navbar-flat .nav-link.active{
+    background: var(--c-primary);
+    color: var(--c-secondary) !important;
+    border-radius: 4px;
   }
-  .btn-primary:hover{ transform: translateY(-1px); box-shadow:0 6px 18px rgba(62,135,13,0.45); }
-  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
-  .tab-btn.active{
-    background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
-    color:white;
+  .section-block{
+    background: var(--c-primary);
+    border: 2px solid var(--c-secondary);
+    border-radius: 6px;
+    box-shadow: none;
+    padding: 1.25rem;
+  }
+  .section-title{
+    color: var(--c-secondary);
+    font-weight: 700;
+    border-bottom: 2px solid var(--c-secondary);
+    padding-bottom: .5rem;
+    margin-bottom: 1rem;
+  }
+  .btn-flat{
+    background: var(--c-secondary);
+    color: var(--c-primary);
+    border: 2px solid var(--c-secondary);
+    border-radius: 4px;
+    font-weight: 600;
+    box-shadow: none;
+  }
+  .btn-flat:hover{ background:#000; color: var(--c-primary); }
+  .btn-flat:disabled{ opacity:.5; }
+  .btn-outline-flat{
+    background: transparent;
+    color: var(--c-secondary);
+    border: 2px solid var(--c-secondary);
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .btn-outline-flat:hover{ background: var(--c-secondary); color: var(--c-primary); }
+  .form-select, .form-control{
+    border: 2px solid var(--c-secondary);
+    border-radius: 4px;
+    box-shadow: none !important;
+  }
+  .info-tile{
+    background: #fff;
+    border: 2px solid var(--c-secondary);
+    border-radius: 4px;
+    padding: .6rem .8rem;
   }
   .radio-card{
-    transition: all .15s ease;
-    cursor:pointer;
+    border: 2px solid var(--c-secondary);
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: background .1s ease;
   }
-  .radio-card.selected{
-    border-color: var(--c-secondary) !important;
-    background: rgba(184,234,133,0.35) !important;
+  .radio-card.selected{ background: var(--c-bg); }
+  .radio-card.exceeded{ background:#f5c2c7; border-color:#842029; }
+  .radio-card.complete{ background:#d7ecd9; }
+  #reader{ border: 2px solid var(--c-secondary); border-radius: 6px; overflow:hidden; }
+  table thead th{ border-bottom: 2px solid var(--c-secondary) !important; color: var(--c-secondary); }
+  table td, table th{ border-color: var(--c-secondary) !important; }
+  .badge-flat{
+    background: var(--c-secondary);
+    color: var(--c-primary);
+    border-radius: 4px;
+    font-weight: 600;
   }
-  .radio-card.exceeded{
-    border-color:#dc2626 !important;
-    background: rgba(220,38,38,0.12) !important;
-  }
-  .radio-card.complete{
-    border-color:var(--c-secondary) !important;
-  }
-  #reader{ border-radius: 16px; overflow:hidden; }
+  .badge-danger-flat{ background:#842029; color:#fff; border-radius:4px; font-weight:600; }
+  .badge-ok-flat{ background:#0f5132; color:#fff; border-radius:4px; font-weight:600; }
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background: var(--c-secondary); border-radius:4px; }
-  .toast{ animation: slideIn .25s ease; }
-  @keyframes slideIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:translateY(0);} }
-  .spin{ animation: spin 1s linear infinite; }
-  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .toast-flat{ border-radius:4px; border:2px solid var(--c-secondary); }
+  #loadingOverlay{ background: rgba(0,0,0,.35); }
   @media print{
     body *{ visibility:hidden; }
     #printArea, #printArea *{ visibility:visible; }
@@ -72,91 +108,97 @@
   }
 </style>
 </head>
-<body class="text-slate-800">
+<body>
 
-<!-- ============ TOP NAV ============ -->
-<nav class="glass-strong sticky top-0 z-40 no-print">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center btn-primary text-lg">📦</div>
-      <div>
-        <h1 class="font-bold text-lg leading-none" style="color:var(--c-secondary)">Packing</h1>
-        <p class="text-[11px] text-slate-500 leading-none mt-1">ระบบรับเข้าสต็อก</p>
-      </div>
+<!-- ============ TOP NAV (Single Page - anchor links) ============ -->
+<nav class="navbar navbar-expand-lg navbar-flat fixed-top no-print">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand fw-bold" href="#scan">📦 Packing</a>
+    <span class="badge badge-flat me-2 d-lg-none" id="apiStatusMobile">•</span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" style="border-color:var(--c-primary)">
+      <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="#scan">รับเข้าสต็อก</a></li>
+        <li class="nav-item"><a class="nav-link" href="#report">สต็อกคงเหลือ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#history">ประวัติเคลื่อนไหว</a></li>
+        <li class="nav-item"><a class="nav-link" href="#print">พิมพ์ใบสินค้า</a></li>
+      </ul>
+      <span class="badge badge-flat d-none d-lg-inline ms-3" id="apiStatus">กำลังเชื่อมต่อ...</span>
     </div>
-    <div id="apiStatus" class="text-xs px-3 py-1 rounded-full glass"></div>
-  </div>
-  <div class="max-w-6xl mx-auto px-2 pb-2 flex gap-1 overflow-x-auto">
-    <button class="tab-btn active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="scan">📷 รับเข้าสต็อก</button>
-    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="report">📊 สต็อกคงเหลือ</button>
-    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="history">🕒 ประวัติเคลื่อนไหว</button>
-    <button class="tab-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap" data-tab="print">🖨️ พิมพ์ใบสินค้า</button>
   </div>
 </nav>
 
-<main class="max-w-6xl mx-auto p-4 pb-24">
+<main class="container py-4">
 
-  <!-- ============ TAB: STOCK-IN / SCAN ============ -->
-  <section id="tab-scan" class="tab-panel space-y-4">
-
-    <div class="glass rounded-2xl p-4 space-y-3">
-      <h2 class="font-semibold" style="color:var(--c-secondary)">1. เลือก Inventory ID</h2>
-      <div class="flex gap-2">
-        <select id="inventorySelect" class="flex-1 rounded-xl border-0 glass-strong px-3 py-2 focus:ring-2 focus:ring-green-600">
-          <option value="">-- เลือก Inventory ID --</option>
-        </select>
-        <button id="btnScanInventory" class="btn-primary rounded-xl px-4 py-2 text-sm">📷 สแกน</button>
-      </div>
-      <div id="shipmentInfoBox" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-2">
-        <div class="glass-strong rounded-xl p-3">
-          <p class="text-slate-500 text-xs">MAT Shipment ID</p>
-          <p class="font-semibold" id="infoShipmentId">-</p>
+  <!-- ============ SECTION: STOCK-IN / SCAN ============ -->
+  <section id="scan" class="mb-4">
+    <div class="section-block mb-3">
+      <h2 class="section-title h5">1. เลือก Inventory ID</h2>
+      <div class="row g-2">
+        <div class="col">
+          <select id="inventorySelect" class="form-select">
+            <option value="">-- เลือก Inventory ID --</option>
+          </select>
         </div>
-        <div class="glass-strong rounded-xl p-3">
-          <p class="text-slate-500 text-xs">Delivery</p>
-          <p class="font-semibold" id="infoDelivery">-</p>
+        <div class="col-auto">
+          <button id="btnScanInventory" class="btn btn-flat">📷 สแกน</button>
+        </div>
+      </div>
+      <div id="shipmentInfoBox" class="row g-2 mt-2 d-none">
+        <div class="col-12 col-sm-6">
+          <div class="info-tile">
+            <div class="small text-muted">MAT Shipment ID</div>
+            <div class="fw-bold" id="infoShipmentId">-</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6">
+          <div class="info-tile">
+            <div class="small text-muted">Delivery</div>
+            <div class="fw-bold" id="infoDelivery">-</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="unitsSection" class="glass rounded-2xl p-4 space-y-3 hidden">
-      <div class="flex items-center justify-between">
-        <h2 class="font-semibold" style="color:var(--c-secondary)">2. สแกนสินค้า (MATUnitID)</h2>
-        <button id="btnToggleCamera" class="btn-primary rounded-xl px-4 py-2 text-sm">📷 เปิดกล้อง</button>
+    <div id="unitsSection" class="section-block d-none">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="section-title h5 mb-0 border-0 pb-0">2. สแกนสินค้า (MATUnitID)</h2>
+        <button id="btnToggleCamera" class="btn btn-flat">📷 เปิดกล้อง</button>
       </div>
 
-      <div id="cameraBox" class="hidden space-y-2">
-        <div id="reader" class="w-full"></div>
-        <div class="flex items-center gap-2 glass-strong rounded-xl px-3 py-2">
-          <span class="text-xs text-slate-600 whitespace-nowrap">🔍 ซูม</span>
-          <input id="zoomRange" type="range" min="1" max="5" step="0.1" value="1" class="w-full accent-green-700">
+      <div id="cameraBox" class="d-none mb-3">
+        <div id="reader" class="w-100"></div>
+        <div class="d-flex align-items-center gap-2 info-tile mt-2">
+          <span class="small text-nowrap">🔍 ซูม</span>
+          <input id="zoomRange" type="range" min="1" max="5" step="0.1" value="1" class="form-range">
         </div>
       </div>
 
-      <div id="unitsList" class="space-y-2"></div>
-      <p class="text-xs text-slate-500">* เลือก (Radio) ได้ด้วยการแตะ หรือสแกน Barcode/QR ให้ระบบเลือกอัตโนมัติ ทุกครั้งที่สแกนจะนับจำนวน +1 อัตโนมัติ</p>
+      <div id="unitsList" class="d-flex flex-column gap-2"></div>
+      <p class="small text-muted mt-2 mb-0">* แตะเพื่อเลือก หรือสแกน Barcode/QR ให้ระบบเลือกอัตโนมัติ ทุกครั้งที่สแกนจะนับจำนวน +1</p>
     </div>
-
   </section>
 
-  <!-- ============ TAB: REPORT ============ -->
-  <section id="tab-report" class="tab-panel hidden space-y-4">
-    <div class="glass rounded-2xl p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold" style="color:var(--c-secondary)">📊 รายงานสต็อกคงเหลือ</h2>
-        <button id="btnRefreshReport" class="btn-primary rounded-xl px-3 py-1.5 text-sm">🔄 รีเฟรช</button>
+  <!-- ============ SECTION: REPORT ============ -->
+  <section id="report" class="mb-4">
+    <div class="section-block">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="section-title h5 mb-0 border-0 pb-0">📊 รายงานสต็อกคงเหลือ</h2>
+        <button id="btnRefreshReport" class="btn btn-outline-flat btn-sm">🔄 รีเฟรช</button>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
           <thead>
-            <tr class="text-left text-slate-500 border-b border-slate-300">
-              <th class="py-2 pr-2">Inventory ID</th>
-              <th class="py-2 pr-2">MATUnitID</th>
-              <th class="py-2 pr-2">MATUnit</th>
-              <th class="py-2 pr-2 text-right">เป้าหมาย</th>
-              <th class="py-2 pr-2 text-right">สแกนแล้ว</th>
-              <th class="py-2 pr-2 text-right">คงเหลือ</th>
-              <th class="py-2 pr-2">สถานะ</th>
+            <tr>
+              <th>Inventory ID</th>
+              <th>MATUnitID</th>
+              <th>MATUnit</th>
+              <th class="text-end">เป้าหมาย</th>
+              <th class="text-end">สแกนแล้ว</th>
+              <th class="text-end">คงเหลือ</th>
+              <th>สถานะ</th>
             </tr>
           </thead>
           <tbody id="reportBody"></tbody>
@@ -165,23 +207,23 @@
     </div>
   </section>
 
-  <!-- ============ TAB: HISTORY ============ -->
-  <section id="tab-history" class="tab-panel hidden space-y-4">
-    <div class="glass rounded-2xl p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold" style="color:var(--c-secondary)">🕒 ประวัติเคลื่อนไหว</h2>
-        <button id="btnRefreshHistory" class="btn-primary rounded-xl px-3 py-1.5 text-sm">🔄 รีเฟรช</button>
+  <!-- ============ SECTION: HISTORY ============ -->
+  <section id="history" class="mb-4">
+    <div class="section-block">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="section-title h5 mb-0 border-0 pb-0">🕒 ประวัติเคลื่อนไหว</h2>
+        <button id="btnRefreshHistory" class="btn btn-outline-flat btn-sm">🔄 รีเฟรช</button>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
           <thead>
-            <tr class="text-left text-slate-500 border-b border-slate-300">
-              <th class="py-2 pr-2">วันที่/เวลา</th>
-              <th class="py-2 pr-2">Inventory ID</th>
-              <th class="py-2 pr-2">MATUnitID</th>
-              <th class="py-2 pr-2 text-right">ลำดับสแกน</th>
-              <th class="py-2 pr-2">สถานะ</th>
-              <th class="py-2 pr-2">ผู้บันทึก</th>
+            <tr>
+              <th>วันที่/เวลา</th>
+              <th>Inventory ID</th>
+              <th>MATUnitID</th>
+              <th class="text-end">ลำดับสแกน</th>
+              <th>สถานะ</th>
+              <th>ผู้บันทึก</th>
             </tr>
           </thead>
           <tbody id="historyBody"></tbody>
@@ -190,35 +232,41 @@
     </div>
   </section>
 
-  <!-- ============ TAB: PRINT ============ -->
-  <section id="tab-print" class="tab-panel hidden space-y-4">
-    <div class="glass rounded-2xl p-4 space-y-3 no-print">
-      <h2 class="font-semibold" style="color:var(--c-secondary)">🖨️ พิมพ์ใบสินค้า</h2>
-      <div class="flex gap-2">
-        <select id="printInventorySelect" class="flex-1 rounded-xl border-0 glass-strong px-3 py-2"></select>
-        <button id="btnLoadPrint" class="btn-primary rounded-xl px-4 py-2 text-sm">โหลดข้อมูล</button>
-        <button id="btnDoPrint" class="btn-primary rounded-xl px-4 py-2 text-sm">🖨️ พิมพ์</button>
+  <!-- ============ SECTION: PRINT ============ -->
+  <section id="print" class="mb-4">
+    <div class="section-block mb-3 no-print">
+      <h2 class="section-title h5">🖨️ พิมพ์ใบสินค้า</h2>
+      <div class="row g-2">
+        <div class="col">
+          <select id="printInventorySelect" class="form-select"></select>
+        </div>
+        <div class="col-auto">
+          <button id="btnLoadPrint" class="btn btn-outline-flat">โหลดข้อมูล</button>
+        </div>
+        <div class="col-auto">
+          <button id="btnDoPrint" class="btn btn-flat">🖨️ พิมพ์</button>
+        </div>
       </div>
-      <p class="text-xs text-slate-500">ขนาดฉลาก: 10 × 15 ซม. (สามารถส่ง Template ตัวอย่างเพิ่มเติมเพื่อปรับแบบฟอร์มให้ตรงความต้องการ)</p>
+      <p class="small text-muted mt-2 mb-0">ขนาดฉลาก: 10 × 15 ซม. (ส่ง Template ตัวอย่างเพิ่มเติมได้เพื่อปรับแบบฟอร์ม)</p>
     </div>
 
-    <div id="printArea" class="glass-strong rounded-2xl p-6 mx-auto" style="width:10cm;min-height:15cm;">
-      <div class="text-center border-b-2 pb-2 mb-3" style="border-color:var(--c-secondary)">
-        <h3 class="font-bold text-lg">ใบรับเข้าสินค้า</h3>
-        <p class="text-xs text-slate-500" id="pPrintedAt"></p>
+    <div id="printArea" class="section-block mx-auto" style="width:10cm;min-height:15cm;">
+      <div class="text-center pb-2 mb-3" style="border-bottom:2px solid var(--c-secondary)">
+        <h3 class="fw-bold h5 mb-0">ใบรับเข้าสินค้า</h3>
+        <p class="small text-muted mb-0" id="pPrintedAt"></p>
       </div>
-      <div class="text-sm space-y-1">
-        <p><b>Inventory ID:</b> <span id="pInventoryId"></span></p>
-        <p><b>MAT Shipment ID:</b> <span id="pShipmentId"></span></p>
-        <p><b>Delivery:</b> <span id="pDelivery"></span></p>
-        <p><b>Container:</b> <span id="pContainer"></span></p>
-        <p><b>วันที่:</b> <span id="pDate"></span></p>
+      <div class="small">
+        <p class="mb-1"><b>Inventory ID:</b> <span id="pInventoryId"></span></p>
+        <p class="mb-1"><b>MAT Shipment ID:</b> <span id="pShipmentId"></span></p>
+        <p class="mb-1"><b>Delivery:</b> <span id="pDelivery"></span></p>
+        <p class="mb-1"><b>Container:</b> <span id="pContainer"></span></p>
+        <p class="mb-1"><b>วันที่:</b> <span id="pDate"></span></p>
       </div>
-      <div class="flex justify-center my-3">
+      <div class="d-flex justify-content-center my-3">
         <div id="qrcodeBox"></div>
       </div>
-      <table class="w-full text-xs border-t pt-2" style="border-color:var(--c-secondary)">
-        <thead><tr class="text-left"><th>MATUnitID</th><th>Unit</th><th class="text-right">จำนวน</th></tr></thead>
+      <table class="table table-sm" style="border-top:2px solid var(--c-secondary)">
+        <thead><tr><th>MATUnitID</th><th>Unit</th><th class="text-end">จำนวน</th></tr></thead>
         <tbody id="pUnitsBody"></tbody>
       </table>
     </div>
@@ -227,21 +275,24 @@
 </main>
 
 <!-- Toast container -->
-<div id="toastBox" class="fixed bottom-4 right-4 z-50 space-y-2 no-print"></div>
+<div id="toastBox" class="position-fixed bottom-0 end-0 p-3 no-print" style="z-index:1080;"></div>
 
 <!-- Loading overlay -->
-<div id="loadingOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-  <div class="glass-strong rounded-2xl px-6 py-4 flex items-center gap-3">
-    <div class="w-6 h-6 border-4 border-green-700 border-t-transparent rounded-full spin"></div>
-    <span class="font-medium">กำลังโหลด...</span>
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none no-print" style="z-index:1090;">
+  <div class="d-flex align-items-center justify-content-center h-100">
+    <div class="section-block d-flex align-items-center gap-3">
+      <div class="spinner-border" style="color:var(--c-secondary)" role="status"></div>
+      <span class="fw-semibold">กำลังโหลด...</span>
+    </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw0YigM7NYL2JlqakC_7GPjxEhqYRgVv3D4DtnH4NcN1NLYwIwXH_4O6b5c0wFFi5Yl/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzFulK1S66TI6IGvi_kMU6m6YPc4WxFITsKwPfsZ-ivj0ZJAccevyWan98oGvZOCmYb/exec';
 /* ================================================= */
 
 let state = {
@@ -254,12 +305,14 @@ let state = {
 };
 
 // ---------- UTIL ----------
-function showLoading(v){ document.getElementById('loadingOverlay').classList.toggle('hidden', !v); }
+function showLoading(v){ document.getElementById('loadingOverlay').classList.toggle('d-none', !v); }
 function toast(msg, type){
   type = type || 'success';
-  const colors = { success:'bg-green-600', error:'bg-red-600', warn:'bg-amber-500' };
+  const bg = { success:'#0f5132', error:'#842029', warn:'#997404' }[type];
   const el = document.createElement('div');
-  el.className = `toast text-white text-sm px-4 py-2 rounded-xl shadow-lg ${colors[type]}`;
+  el.className = 'toast-flat text-white px-3 py-2 mb-2';
+  el.style.background = bg;
+  el.style.borderRadius = '4px';
   el.textContent = msg;
   document.getElementById('toastBox').appendChild(el);
   setTimeout(()=> el.remove(), 3500);
@@ -288,33 +341,39 @@ async function apiPost(action, payload){
   return json.data;
 }
 
-// ---------- TABS ----------
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden'));
-    document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-    if (btn.dataset.tab === 'report') loadReport();
-    if (btn.dataset.tab === 'history') loadHistory();
-    if (btn.dataset.tab === 'print') loadPrintDropdown();
+// ---------- ACTIVE NAV LINK ON SCROLL (single page) ----------
+const navLinks = document.querySelectorAll('#navMain .nav-link');
+const sections = ['scan','report','history','print'].map(id => document.getElementById(id));
+function updateActiveNav(){
+  let current = sections[0].id;
+  sections.forEach(sec=>{
+    if (window.scrollY + 90 >= sec.offsetTop) current = sec.id;
   });
-});
+  navLinks.forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateActiveNav);
 
 // ---------- INIT ----------
 async function init(){
   showLoading(true);
   try{
-    await apiGet('inventoryList').then(list=>{
-      document.getElementById('apiStatus').textContent = '🟢 เชื่อมต่อสำเร็จ';
-      fillInventorySelect(list);
-    });
+    const list = await apiGet('inventoryList');
+    document.getElementById('apiStatus').textContent = '🟢 เชื่อมต่อสำเร็จ';
+    document.getElementById('apiStatusMobile').textContent = '🟢';
+    fillInventorySelect(list);
   }catch(err){
     document.getElementById('apiStatus').textContent = '🔴 เชื่อมต่อไม่สำเร็จ';
+    document.getElementById('apiStatusMobile').textContent = '🔴';
     toast('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message, 'error');
   }finally{
     showLoading(false);
   }
+  // เนื่องจากเป็น Single Page ทุก section แสดงพร้อมกัน โหลดรายงาน/ประวัติไว้ล่วงหน้าเลย
+  loadReport();
+  loadHistory();
+  updateActiveNav();
 }
 
 function fillInventorySelect(list){
@@ -336,16 +395,15 @@ async function loadInventory(id){
   showLoading(true);
   try{
     state.inventoryId = id;
-    // เรียก API ครั้งเดียว (info + units มาพร้อมกัน) แทนการยิง 2 รอบ - ลดเวลาโหลดประมาณครึ่งหนึ่ง
     const detail = await apiGet('inventoryDetail', { inventoryId: id });
     state.shipmentInfo = detail.info;
     document.getElementById('infoShipmentId').textContent = detail.info.shipmentId || '-';
     document.getElementById('infoDelivery').textContent = detail.info.delivery || '-';
-    document.getElementById('shipmentInfoBox').classList.remove('hidden');
+    document.getElementById('shipmentInfoBox').classList.remove('d-none');
 
     state.units = detail.units;
     renderUnits();
-    document.getElementById('unitsSection').classList.remove('hidden');
+    document.getElementById('unitsSection').classList.remove('d-none');
   }catch(err){
     toast(err.message, 'error');
   }finally{
@@ -356,24 +414,24 @@ async function loadInventory(id){
 function renderUnits(){
   const box = document.getElementById('unitsList');
   if (state.units.length === 0){
-    box.innerHTML = '<p class="text-sm text-slate-500">ไม่พบรายการสินค้าของ Inventory ID นี้ในชีท IS</p>';
+    box.innerHTML = '<p class="small text-muted mb-0">ไม่พบรายการสินค้าของ Inventory ID นี้ในชีท IS</p>';
     return;
   }
   box.innerHTML = state.units.map(u=>{
     const cls = u.exceeded ? 'exceeded' : (u.remaining <= 0 ? 'complete' : '');
     const selected = state.selectedUnitId === u.matUnitId ? 'selected' : '';
     return `
-    <label class="radio-card ${cls} ${selected} flex items-center justify-between glass-strong rounded-xl p-3 border-2 border-transparent" data-unit="${u.matUnitId}">
-      <div class="flex items-center gap-3">
-        <input type="radio" name="unitRadio" value="${u.matUnitId}" class="w-4 h-4 accent-green-700" ${selected ? 'checked':''}>
+    <label class="radio-card ${cls} ${selected} d-flex align-items-center justify-content-between p-2" data-unit="${u.matUnitId}">
+      <div class="d-flex align-items-center gap-2">
+        <input type="radio" name="unitRadio" value="${u.matUnitId}" class="form-check-input mt-0" ${selected ? 'checked':''}>
         <div>
-          <p class="font-semibold text-sm">${u.matUnitId}</p>
-          <p class="text-xs text-slate-500">${u.matUnit}</p>
+          <div class="fw-bold small">${u.matUnitId}</div>
+          <div class="small text-muted">${u.matUnit}</div>
         </div>
       </div>
-      <div class="text-right">
-        <p class="text-sm font-bold" style="color:var(--c-secondary)">${u.scanned}/${u.quantity}</p>
-        <p class="text-xs ${u.exceeded ? 'text-red-600 font-semibold' : 'text-slate-500'}">${u.exceeded ? 'เกินจำนวน!' : (u.remaining<=0 ? 'ครบแล้ว' : 'คงเหลือ ' + u.remaining)}</p>
+      <div class="text-end">
+        <div class="fw-bold small">${u.scanned}/${u.quantity}</div>
+        <span class="${u.exceeded ? 'badge-danger-flat' : (u.remaining<=0 ? 'badge-ok-flat':'badge-flat')} px-2 py-1" style="font-size:.7rem;">${u.exceeded ? 'เกินจำนวน!' : (u.remaining<=0 ? 'ครบแล้ว' : 'คงเหลือ ' + u.remaining)}</span>
       </div>
     </label>`;
   }).join('');
@@ -397,7 +455,7 @@ async function toggleCamera(){
     await stopCamera();
     return;
   }
-  document.getElementById('cameraBox').classList.remove('hidden');
+  document.getElementById('cameraBox').classList.remove('d-none');
   document.getElementById('btnToggleCamera').textContent = '⏹️ ปิดกล้อง';
   state.html5Qr = new Html5Qrcode('reader');
   const config = { fps: 12, qrbox: { width: 260, height: 180 } };
@@ -412,7 +470,7 @@ async function toggleCamera(){
     setupZoom();
   }catch(err){
     toast('เปิดกล้องไม่สำเร็จ: ' + err.message, 'error');
-    document.getElementById('cameraBox').classList.add('hidden');
+    document.getElementById('cameraBox').classList.add('d-none');
     document.getElementById('btnToggleCamera').textContent = '📷 เปิดกล้อง';
   }
 }
@@ -422,7 +480,7 @@ async function stopCamera(){
     try{ await state.html5Qr.stop(); await state.html5Qr.clear(); }catch(e){}
   }
   state.cameraOn = false;
-  document.getElementById('cameraBox').classList.add('hidden');
+  document.getElementById('cameraBox').classList.add('d-none');
   document.getElementById('btnToggleCamera').textContent = '📷 เปิดกล้อง';
 }
 
@@ -452,7 +510,6 @@ async function onScanSuccess(decodedText){
     return;
   }
 
-  // จับคู่กับ MATUnitID ในรายการ
   const match = state.units.find(u => u.matUnitId === decodedText);
   if (!match){
     toast('ไม่พบรหัสนี้ในรายการสินค้าของ Inventory ที่เลือก: ' + decodedText, 'warn');
@@ -481,7 +538,6 @@ async function submitScan(unit){
       operator: 'เว็บแอป'
     });
 
-    // อัปเดต state ในหน่วยความจำ
     const idx = state.units.findIndex(u => u.matUnitId === unit.matUnitId);
     if (idx > -1){
       state.units[idx].scanned = result.scanned;
@@ -500,7 +556,6 @@ async function submitScan(unit){
   }
 }
 
-// manual select + manual +1 (กรณีไม่ใช้กล้อง)
 document.getElementById('unitsList').addEventListener('dblclick', (e)=>{
   const card = e.target.closest('.radio-card');
   if (!card) return;
@@ -510,64 +565,54 @@ document.getElementById('unitsList').addEventListener('dblclick', (e)=>{
 
 // ---------- REPORT ----------
 async function loadReport(){
-  showLoading(true);
   try{
     const data = await apiGet('summary');
     const body = document.getElementById('reportBody');
     if (data.length === 0){
-      body.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400">ยังไม่มีข้อมูล</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-muted">ยังไม่มีข้อมูล</td></tr>';
       return;
     }
     body.innerHTML = data.map(r=>`
-      <tr class="border-b border-slate-200">
-        <td class="py-2 pr-2">${r.inventoryId}</td>
-        <td class="py-2 pr-2">${r.matUnitId}</td>
-        <td class="py-2 pr-2">${r.matUnit}</td>
-        <td class="py-2 pr-2 text-right">${r.target}</td>
-        <td class="py-2 pr-2 text-right">${r.scanned}</td>
-        <td class="py-2 pr-2 text-right">${r.remaining}</td>
-        <td class="py-2 pr-2">${r.exceeded ? '<span class="text-red-600 font-semibold">เกินจำนวน</span>' : (r.complete ? '<span style="color:var(--c-secondary)" class="font-semibold">ครบแล้ว</span>' : 'กำลังรับเข้า')}</td>
+      <tr>
+        <td>${r.inventoryId}</td>
+        <td>${r.matUnitId}</td>
+        <td>${r.matUnit}</td>
+        <td class="text-end">${r.target}</td>
+        <td class="text-end">${r.scanned}</td>
+        <td class="text-end">${r.remaining}</td>
+        <td>${r.exceeded ? '<span class="badge-danger-flat px-2 py-1">เกินจำนวน</span>' : (r.complete ? '<span class="badge-ok-flat px-2 py-1">ครบแล้ว</span>' : '<span class="badge-flat px-2 py-1">กำลังรับเข้า</span>')}</td>
       </tr>`).join('');
   }catch(err){
     toast(err.message, 'error');
-  }finally{
-    showLoading(false);
   }
 }
 document.getElementById('btnRefreshReport').addEventListener('click', loadReport);
 
 // ---------- HISTORY ----------
 async function loadHistory(){
-  showLoading(true);
   try{
     const data = await apiGet('history');
     const body = document.getElementById('historyBody');
     if (data.length === 0){
-      body.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">ยังไม่มีข้อมูล</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-muted">ยังไม่มีข้อมูล</td></tr>';
       return;
     }
     body.innerHTML = data.map(r=>`
-      <tr class="border-b border-slate-200">
-        <td class="py-2 pr-2 whitespace-nowrap">${r['วันที่/เวลา']}</td>
-        <td class="py-2 pr-2">${r['Inventory ID']}</td>
-        <td class="py-2 pr-2">${r['MATUnitID']}</td>
-        <td class="py-2 pr-2 text-right">${r['ลำดับที่สแกน']}/${r['จำนวนเป้าหมาย']}</td>
-        <td class="py-2 pr-2">${r['สถานะ'] === 'เกินจำนวน!' ? '<span class="text-red-600 font-semibold">เกินจำนวน</span>' : 'ปกติ'}</td>
-        <td class="py-2 pr-2">${r['ผู้บันทึก']}</td>
+      <tr>
+        <td class="text-nowrap">${r['วันที่/เวลา']}</td>
+        <td>${r['Inventory ID']}</td>
+        <td>${r['MATUnitID']}</td>
+        <td class="text-end">${r['ลำดับที่สแกน']}/${r['จำนวนเป้าหมาย']}</td>
+        <td>${r['สถานะ'] === 'เกินจำนวน!' ? '<span class="badge-danger-flat px-2 py-1">เกินจำนวน</span>' : '<span class="badge-flat px-2 py-1">ปกติ</span>'}</td>
+        <td>${r['ผู้บันทึก']}</td>
       </tr>`).join('');
   }catch(err){
     toast(err.message, 'error');
-  }finally{
-    showLoading(false);
   }
 }
 document.getElementById('btnRefreshHistory').addEventListener('click', loadHistory);
 
 // ---------- PRINT ----------
-function loadPrintDropdown(){
-  // ใช้รายการเดียวกับ inventorySelect (โหลดไปแล้วตอน init)
-}
-
 document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
   const id = document.getElementById('printInventorySelect').value;
   if (!id) return toast('กรุณาเลือก Inventory ID', 'warn');
@@ -581,7 +626,7 @@ document.getElementById('btnLoadPrint').addEventListener('click', async ()=>{
     document.getElementById('pDate').textContent = data.info.date || '';
     document.getElementById('pPrintedAt').textContent = 'พิมพ์เมื่อ ' + data.printedAt;
     document.getElementById('pUnitsBody').innerHTML = data.units.map(u=>
-      `<tr><td>${u.matUnitId}</td><td>${u.matUnit}</td><td class="text-right">${u.scanned}/${u.quantity}</td></tr>`
+      `<tr><td>${u.matUnitId}</td><td>${u.matUnit}</td><td class="text-end">${u.scanned}/${u.quantity}</td></tr>`
     ).join('');
 
     document.getElementById('qrcodeBox').innerHTML = '';
