@@ -110,20 +110,20 @@
 </head>
 <body>
 
-<!-- ============ TOP NAV (Single Page - anchor links) ============ -->
+<!-- ============ TOP NAV (Tab Navigation) ============ -->
 <nav class="navbar navbar-expand-lg navbar-flat fixed-top no-print">
   <div class="container-fluid px-3">
-    <a class="navbar-brand fw-bold" href="#scan">📦 Packing</a>
+    <a class="navbar-brand fw-bold" href="#" onclick="return false;">📦 Packing</a>
     <span class="badge badge-flat me-2 d-lg-none" id="apiStatusMobile">•</span>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" style="border-color:var(--c-primary)">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMain">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="#scan">รับเข้าสต็อก</a></li>
-        <li class="nav-item"><a class="nav-link" href="#report">สต็อกคงเหลือ</a></li>
-        <li class="nav-item"><a class="nav-link" href="#history">ประวัติเคลื่อนไหว</a></li>
-        <li class="nav-item"><a class="nav-link" href="#print">พิมพ์ใบสินค้า</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#" data-tab="scan">รับเข้าสต็อก</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-tab="report">สต็อกคงเหลือ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-tab="history">ประวัติเคลื่อนไหว</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-tab="print">พิมพ์ใบสินค้า</a></li>
       </ul>
       <span class="badge badge-flat d-none d-lg-inline ms-3" id="apiStatus">กำลังเชื่อมต่อ...</span>
     </div>
@@ -132,8 +132,8 @@
 
 <main class="container py-4">
 
-  <!-- ============ SECTION: STOCK-IN / SCAN ============ -->
-  <section id="scan" class="mb-4">
+  <!-- ============ TAB: STOCK-IN / SCAN ============ -->
+  <section id="scan" class="tab-panel mb-4">
     <div class="section-block mb-3">
       <h2 class="section-title h5">1. เลือก Inventory ID</h2>
       <div class="row g-2">
@@ -181,8 +181,8 @@
     </div>
   </section>
 
-  <!-- ============ SECTION: REPORT ============ -->
-  <section id="report" class="mb-4">
+  <!-- ============ TAB: REPORT ============ -->
+  <section id="report" class="tab-panel mb-4 d-none">
     <div class="section-block">
       <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="section-title h5 mb-0 border-0 pb-0">📊 รายงานสต็อกคงเหลือ</h2>
@@ -207,8 +207,8 @@
     </div>
   </section>
 
-  <!-- ============ SECTION: HISTORY ============ -->
-  <section id="history" class="mb-4">
+  <!-- ============ TAB: HISTORY ============ -->
+  <section id="history" class="tab-panel mb-4 d-none">
     <div class="section-block">
       <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="section-title h5 mb-0 border-0 pb-0">🕒 ประวัติเคลื่อนไหว</h2>
@@ -232,8 +232,8 @@
     </div>
   </section>
 
-  <!-- ============ SECTION: PRINT ============ -->
-  <section id="print" class="mb-4">
+  <!-- ============ TAB: PRINT ============ -->
+  <section id="print" class="tab-panel mb-4 d-none">
     <div class="section-block mb-3 no-print">
       <h2 class="section-title h5">🖨️ พิมพ์ใบสินค้า</h2>
       <div class="row g-2">
@@ -292,7 +292,7 @@
 <script>
 /* ==================== CONFIG ====================
    วาง URL ของ GAS Web App ที่ Deploy แล้ว (ลงท้ายด้วย /exec) ตรงนี้ */
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzFulK1S66TI6IGvi_kMU6m6YPc4WxFITsKwPfsZ-ivj0ZJAccevyWan98oGvZOCmYb/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/exec';
 /* ================================================= */
 
 let state = {
@@ -341,19 +341,25 @@ async function apiPost(action, payload){
   return json.data;
 }
 
-// ---------- ACTIVE NAV LINK ON SCROLL (single page) ----------
-const navLinks = document.querySelectorAll('#navMain .nav-link');
-const sections = ['scan','report','history','print'].map(id => document.getElementById(id));
-function updateActiveNav(){
-  let current = sections[0].id;
-  sections.forEach(sec=>{
-    if (window.scrollY + 90 >= sec.offsetTop) current = sec.id;
+// ---------- TAB NAVIGATION ----------
+const navLinks = document.querySelectorAll('#navMain .nav-link[data-tab]');
+navLinks.forEach(link=>{
+  link.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const tab = link.dataset.tab;
+    navLinks.forEach(a=>a.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('d-none'));
+    document.getElementById(tab).classList.remove('d-none');
+    window.scrollTo({ top:0, behavior:'instant' });
+    // ปิดเมนูมือถือหลังเลือกแท็บ
+    const collapse = bootstrap.Collapse.getInstance(document.getElementById('navMain'));
+    if (collapse) collapse.hide();
+
+    if (tab === 'report') loadReport();
+    if (tab === 'history') loadHistory();
   });
-  navLinks.forEach(a=>{
-    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-  });
-}
-window.addEventListener('scroll', updateActiveNav);
+});
 
 // ---------- INIT ----------
 async function init(){
@@ -370,10 +376,6 @@ async function init(){
   }finally{
     showLoading(false);
   }
-  // เนื่องจากเป็น Single Page ทุก section แสดงพร้อมกัน โหลดรายงาน/ประวัติไว้ล่วงหน้าเลย
-  loadReport();
-  loadHistory();
-  updateActiveNav();
 }
 
 function fillInventorySelect(list){
